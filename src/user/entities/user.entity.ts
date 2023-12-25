@@ -16,6 +16,7 @@ import { UserHeightEntity } from "./user-height.entity";
 import { NotificationEntity } from "src/notification/entities/notification.entity";
 import { UserAnswerEntity } from "./user-answer.entity";
 import { DiaryEntity } from "src/diary/entities/diary.entity";
+import { UserHrzoneEntity } from "./user-hrzone.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -82,4 +83,10 @@ export class UserEntity extends AbstractEntity {
     onDelete: "CASCADE",
   })
   diaries: DiaryEntity[];
+
+  @OneToMany(() => UserHrzoneEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  hrzones: UserHrzoneEntity[];
 }

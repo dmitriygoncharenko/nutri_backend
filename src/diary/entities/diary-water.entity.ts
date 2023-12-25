@@ -1,4 +1,16 @@
-import { Entity } from "typeorm";
+import { AbstractEntity } from "src/shared/entities/abstract.entity";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { DiaryEntity } from "./diary.entity";
 
-@Entity('diary_waters')
-export class DiaryWaterEntity
+@Entity("diary_waters")
+export class DiaryWaterEntity extends AbstractEntity {
+  @Column({ type: "int" })
+  value: number; // milliliters
+
+  @Column({ type: "uuid" })
+  diaryId: string;
+
+  @ManyToOne(() => DiaryEntity, (entity) => entity.waters)
+  @JoinColumn({ name: "diaryId", referencedColumnName: "id" })
+  diary: DiaryEntity;
+}
