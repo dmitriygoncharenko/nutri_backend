@@ -1,4 +1,4 @@
-export enum UserFamilyStatusEnum {
+export enum UserFamilyRelationEnum {
   SINGLE = "Single",
   MARRIED = "Married",
   DIVORCED = "Divorced",

@@ -9,7 +9,7 @@ export abstract class AbstractEntity {
   @PrimaryGeneratedColumn("uuid", { name: "id" })
   id!: string;
 
-  @DeleteDateColumn({ type: "timestamp with time zone" })
+  @DeleteDateColumn({ type: "timestamptz" })
   deletedAt: Date;
 
   @CreateDateColumn({ default: () => "CURRENT_TIMESTAMP" })

@@ -4,8 +4,8 @@ import { UserEntity } from "./user.entity";
 import { WeightMetricEnum } from "src/shared/enums/weight-metric.enum";
 import { HeightMetricEnum } from "src/shared/enums/height-metric.enum";
 
-@Entity("user_anthropometries")
-export class UserAnthropometryEntity extends AbstractEntity {
+@Entity("user_weight")
+export class UserWeightEntity extends AbstractEntity {
   @Column({ type: "decimal", precision: 5, scale: 2 })
   weight: number;
 
@@ -16,20 +16,10 @@ export class UserAnthropometryEntity extends AbstractEntity {
   })
   weight_metric: WeightMetricEnum;
 
-  @Column({ type: "int" })
-  height: number;
-
-  @Column({
-    type: "enum",
-    enum: HeightMetricEnum,
-    default: HeightMetricEnum.CENTIMETER,
-  })
-  height_metric: HeightMetricEnum;
-
   @Column({ type: "uuid" })
   userId: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.user_anthropometry)
+  @ManyToOne(() => UserEntity, (user) => user.weight)
   @JoinColumn({ name: "userId", referencedColumnName: "id" })
   user: UserEntity;
 }
