@@ -13,13 +13,13 @@ export class QuestionGroupEntity extends AbstractEntity {
   @Column({ type: "uuid" })
   questionnaireId: string;
 
+  @ManyToOne(() => QuestionnaireEntity, (entity) => entity.groups)
+  @JoinColumn({ name: "questionnaireId", referencedColumnName: "id" })
+  questionnaire: QuestionnaireEntity;
+
   @OneToMany(() => QuestionEntity, (entity) => entity.group, {
     cascade: true,
     onDelete: "CASCADE",
   })
   questions: QuestionEntity[];
-
-  @ManyToOne(() => QuestionnaireEntity, (entity) => entity.groups)
-  @JoinColumn({ name: "questionnaireId", referencedColumnName: "id" })
-  questionnaire: QuestionnaireEntity;
 }

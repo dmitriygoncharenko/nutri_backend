@@ -11,10 +11,11 @@ import {
 } from "typeorm";
 import { UserProfileEntity } from "./user-profile.entity";
 import { UserWeightEntity } from "./user-weight.entity";
-import { UserAnamnesisEntity } from "./user-anamnesis.entity";
 import { AnalysisEntity } from "src/analysis/entities/analysis.entity";
 import { UserHeightEntity } from "./user-height.entity";
 import { NotificationEntity } from "src/notification/entities/notification.entity";
+import { UserAnswerEntity } from "./user-answer.entity";
+import { DiaryEntity } from "src/diary/entities/diary.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -58,12 +59,6 @@ export class UserEntity extends AbstractEntity {
   })
   height: UserHeightEntity[];
 
-  @OneToMany(() => UserAnamnesisEntity, (entity) => entity.user, {
-    cascade: true,
-    onDelete: "CASCADE",
-  })
-  anamnesis: UserAnamnesisEntity[];
-
   @OneToMany(() => AnalysisEntity, (entity) => entity.user, {
     cascade: true,
     onDelete: "CASCADE",
@@ -75,4 +70,16 @@ export class UserEntity extends AbstractEntity {
     onDelete: "CASCADE",
   })
   notifications: NotificationEntity[];
+
+  @OneToMany(() => UserAnswerEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  answers: UserAnswerEntity[];
+
+  @OneToMany(() => DiaryEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  diaries: DiaryEntity[];
 }
