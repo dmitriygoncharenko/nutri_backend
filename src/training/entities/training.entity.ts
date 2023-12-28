@@ -12,17 +12,15 @@ export class TrainingEntity extends AbstractEntity {
   @JoinColumn({ name: "typeId", referencedColumnName: "id" })
   type: TrainingTypeEntity;
 
-  @Column({
-    type: "decimal",
-    precision: 10,
-    scale: 2,
-    transformer: new DecimalTransformer(),
-  })
+  @Column({ type: "int" }) // meters
   distance: number;
 
   @Column({ type: "int" }) // seconds
   duration: number;
 
-  hr;
-  calories;
+  @Column({ type: "int" }) // example 156
+  hr: number;
+
+  @Column({ type: "int" })
+  calories: number;
 }

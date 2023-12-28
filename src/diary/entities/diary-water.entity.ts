@@ -13,4 +13,7 @@ export class DiaryWaterEntity extends AbstractEntity {
   @ManyToOne(() => DiaryEntity, (entity) => entity.waters)
   @JoinColumn({ name: "diaryId", referencedColumnName: "id" })
   diary: DiaryEntity;
+
+  @Column({ type: "timetz" })
+  time: string;
 }

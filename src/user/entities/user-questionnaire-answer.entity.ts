@@ -1,11 +1,13 @@
 import { QuestionEntity } from "src/questionnaire/entities/question.entity";
 import { AbstractEntity } from "src/shared/entities/abstract.entity";
-import { BeforeInsert, Column, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { UserEntity } from "./user.entity";
 import { QuestionTypeEnum } from "src/questionnaire/enums/question-type.enum";
 import { BadRequestException } from "@nestjs/common";
+import { UserQuestionnaireResponseEntity } from "./user-questionnaire-response.entity";
 
-export class UserAnswerEntity extends AbstractEntity {
+@Entity("user_questionnaire_answers")
+export class UserQuestionnaireAnswerEntity extends AbstractEntity {
   @Column({ type: "uuid" })
   userId: string;
 
@@ -25,6 +27,13 @@ export class UserAnswerEntity extends AbstractEntity {
 
   @Column({ type: "decimal", nullable: true })
   grade?: number;
+
+  @Column({ type: "uuid" })
+  responseId: string;
+
+  @ManyToOne(() => UserQuestionnaireResponseEntity, (entity) => entity.answers)
+  @JoinColumn({ name: "responseId", referencedColumnName: "id" })
+  response: UserQuestionnaireResponseEntity;
 
   // check if grade is setup for question type with grade
   @BeforeInsert()

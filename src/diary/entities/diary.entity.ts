@@ -14,8 +14,8 @@ export class DiaryEntity extends AbstractEntity {
   @JoinColumn({ name: "userId", referencedColumnName: "id" })
   user: UserEntity;
 
-  @Column({ type: "timestamptz" })
-  date: Date;
+  @Column({ type: "date" })
+  date: string;
 
   @Column({ type: "text", nullable })
   sleep?: string;

@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { QuestionGroupEntity } from "./question-group.entity";
 import { QuestionTypeEnum } from "../enums/question-type.enum";
 import { QuestionGradeEntity } from "./question-grade.entity";
-import { UserAnswerEntity } from "src/user/entities/user-answer.entity";
+import { UserQuestionnaireAnswerEntity } from "src/user/entities/user-questionnaire-answer.entity";
 
 @Entity("questions")
 export class QuestionEntity extends AbstractEntity {
@@ -33,9 +33,9 @@ export class QuestionEntity extends AbstractEntity {
   })
   grades: QuestionGradeEntity[];
 
-  @OneToMany(() => UserAnswerEntity, (entity) => entity.question, {
+  @OneToMany(() => UserQuestionnaireAnswerEntity, (entity) => entity.question, {
     cascade: true,
     onDelete: "CASCADE",
   })
-  answers: UserAnswerEntity[];
+  answers: UserQuestionnaireAnswerEntity[];
 }

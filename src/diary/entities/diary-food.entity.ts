@@ -10,4 +10,14 @@ export class DiaryFoodEntity extends AbstractEntity {
   @ManyToOne(() => DiaryEntity, (entity) => entity.foods)
   @JoinColumn({ name: "diaryId", referencedColumnName: "id" })
   diary: DiaryEntity;
+
+  @Column({ type: "timetz" })
+  time: string;
+
+  food: string;
+  value: number;
+  metric: string;
+
+  @Column({ type: "boolean", default: false })
+  eaten: boolean;
 }

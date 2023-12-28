@@ -14,9 +14,13 @@ import { UserWeightEntity } from "./user-weight.entity";
 import { AnalysisEntity } from "src/analysis/entities/analysis.entity";
 import { UserHeightEntity } from "./user-height.entity";
 import { NotificationEntity } from "src/notification/entities/notification.entity";
-import { UserAnswerEntity } from "./user-answer.entity";
+import { UserQuestionnaireAnswerEntity } from "./user-questionnaire-answer.entity";
 import { DiaryEntity } from "src/diary/entities/diary.entity";
 import { UserHrzoneEntity } from "./user-hrzone.entity";
+import { TrainingPlanEntity } from "src/training/entities/training-plan.entity";
+import { UserCoachProfileEntity } from "./user-coach-profile.entity";
+import { QuestionnaireEntity } from "src/questionnaire/entities/questionnaire.entity";
+import { UserQuestionnaireResponseAnalysisEntity } from "./user-questionnaire-response-analysis.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -72,11 +76,11 @@ export class UserEntity extends AbstractEntity {
   })
   notifications: NotificationEntity[];
 
-  @OneToMany(() => UserAnswerEntity, (entity) => entity.user, {
+  @OneToMany(() => UserQuestionnaireAnswerEntity, (entity) => entity.user, {
     cascade: true,
     onDelete: "CASCADE",
   })
-  answers: UserAnswerEntity[];
+  answers: UserQuestionnaireAnswerEntity[];
 
   @OneToMany(() => DiaryEntity, (entity) => entity.user, {
     cascade: true,
@@ -89,4 +93,29 @@ export class UserEntity extends AbstractEntity {
     onDelete: "CASCADE",
   })
   hrzones: UserHrzoneEntity[];
+
+  @OneToMany(() => TrainingPlanEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  training_plans: TrainingPlanEntity[];
+
+  @OneToMany(() => TrainingPlanEntity, (entity) => entity.creator, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  creator_training_plans: TrainingPlanEntity[];
+
+  @OneToOne(() => UserCoachProfileEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  coach_profile: UserCoachProfileEntity;
+
+  @OneToMany(
+    () => UserQuestionnaireResponseAnalysisEntity,
+    (entity) => entity.creator,
+    { cascade: true, onDelete: "CASCADE" }
+  )
+  creatorAnalysis: UserQuestionnaireResponseAnalysisEntity[];
 }
