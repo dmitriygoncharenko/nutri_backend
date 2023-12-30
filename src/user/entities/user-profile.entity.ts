@@ -47,10 +47,7 @@ export class UserProfileEntity extends AbstractEntity {
   @Column({ type: "uuid" })
   userId: string;
 
-  @OneToOne(() => UserEntity, (entity) => entity.profile, {
-    cascade: true,
-    onDelete: "CASCADE",
-  })
+  @OneToOne(() => UserEntity, (entity) => entity.profile)
   @JoinColumn({ name: "userId", referencedColumnName: "id" })
   user: UserEntity;
 }

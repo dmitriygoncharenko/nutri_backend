@@ -20,7 +20,7 @@ import { UserHrzoneEntity } from "./user-hrzone.entity";
 import { TrainingPlanEntity } from "src/training/entities/training-plan.entity";
 import { UserCoachProfileEntity } from "./user-coach-profile.entity";
 import { QuestionnaireEntity } from "src/questionnaire/entities/questionnaire.entity";
-import { UserQuestionnaireResponseAnalysisEntity } from "./user-questionnaire-response-analysis.entity";
+import { UsereHealthProblemEntity } from "./user-health-problem.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -112,10 +112,9 @@ export class UserEntity extends AbstractEntity {
   })
   coach_profile: UserCoachProfileEntity;
 
-  @OneToMany(
-    () => UserQuestionnaireResponseAnalysisEntity,
-    (entity) => entity.creator,
-    { cascade: true, onDelete: "CASCADE" }
-  )
-  creatorAnalysis: UserQuestionnaireResponseAnalysisEntity[];
+  @OneToMany(() => UsereHealthProblemEntity, (entity) => entity.creator, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  creatorAnalysis: UsereHealthProblemEntity[];
 }

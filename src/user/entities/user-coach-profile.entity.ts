@@ -10,10 +10,7 @@ export class UserCoachProfileEntity extends AbstractEntity {
   @Column({ type: "uuid" })
   userId: string;
 
-  @OneToOne(() => UserEntity, (entity) => entity.coach_profile, {
-    cascade: true,
-    onDelete: "CASCADE",
-  })
+  @OneToOne(() => UserEntity, (entity) => entity.coach_profile)
   user: UserEntity;
 
   // Personal Trainer/Fitness Professional

@@ -3,8 +3,8 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { UserQuestionnaireResponseEntity } from "./user-questionnaire-response.entity";
 import { UserEntity } from "./user.entity";
 
-@Entity("user_questionnaire_response_analysis")
-export class UserQuestionnaireResponseAnalysisEntity extends AbstractEntity {
+@Entity("user_health_problems")
+export class UsereHealthProblemEntity extends AbstractEntity {
   @Column({ type: "text" })
   description: string;
 
