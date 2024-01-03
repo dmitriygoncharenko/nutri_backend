@@ -20,20 +20,26 @@ import { UserHrzoneEntity } from "./user-hrzone.entity";
 import { TrainingPlanEntity } from "src/training/entities/training-plan.entity";
 import { UserCoachProfileEntity } from "./user-coach-profile.entity";
 import { QuestionnaireEntity } from "src/questionnaire/entities/questionnaire.entity";
-import { UsereHealthProblemEntity } from "./user-health-problem.entity";
+import { UserHealthProblemEntity } from "./user-health-problem.entity";
+import { ApiPropertyEmail } from "src/shared/decorators/email.decorator";
+import { ApiPropertyString } from "src/shared/decorators/api.decorator";
+import { ApiProperty } from "@nestjs/swagger";
+import { ApiPropertyId } from "src/shared/decorators/uuid.decorator";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
+  @ApiPropertyEmail()
   @Column({ nullable: false })
   @IsEmail({}, { message: "Incorrect email" })
   @IsNotEmpty({ message: "The email is required" })
   email: string;
 
+  @ApiPropertyString()
   @Column({ type: "text" })
   @IsPhoneNumber(null, { message: "Incorrect phone number" })
   phone: string;
 
-  @ManyToMany((type) => UserEntity, (user) => user.clients)
+  @ManyToMany(() => UserEntity, (user) => user.clients)
   @JoinTable()
   clients: UserEntity[];
 
@@ -41,6 +47,7 @@ export class UserEntity extends AbstractEntity {
   @JoinTable()
   coaches: UserEntity;
 
+  @ApiPropertyId()
   @Column({ type: "uuid" })
   profileId: string;
 
@@ -112,9 +119,9 @@ export class UserEntity extends AbstractEntity {
   })
   coach_profile: UserCoachProfileEntity;
 
-  @OneToMany(() => UsereHealthProblemEntity, (entity) => entity.creator, {
+  @OneToMany(() => UserHealthProblemEntity, (entity) => entity.creator, {
     cascade: true,
     onDelete: "CASCADE",
   })
-  creatorAnalysis: UsereHealthProblemEntity[];
+  creatorAnalysis: UserHealthProblemEntity[];
 }

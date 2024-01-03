@@ -4,9 +4,11 @@ import { QuestionGroupEntity } from "./question-group.entity";
 import { QuestionTypeEnum } from "../enums/question-type.enum";
 import { QuestionGradeEntity } from "./question-grade.entity";
 import { UserQuestionnaireAnswerEntity } from "src/user/entities/user-questionnaire-answer.entity";
+import { ApiPropertyString } from "src/shared/decorators/api.decorator";
 
 @Entity("questions")
 export class QuestionEntity extends AbstractEntity {
+  @ApiPropertyString()
   @Column({ type: "text" })
   caption: string;
 

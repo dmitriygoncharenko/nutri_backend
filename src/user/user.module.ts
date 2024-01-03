@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UserEntity } from "./entities/user.entity";
 import { UserCoachProfileEntity } from "./entities/user-coach-profile.entity";
-import { UsereHealthProblemEntity } from "./entities/user-health-problem.entity";
+import { UserHealthProblemEntity } from "./entities/user-health-problem.entity";
 import { UserHeightEntity } from "./entities/user-height.entity";
 import { UserWeightEntity } from "./entities/user-weight.entity";
 import { UserHrzoneEntity } from "./entities/user-hrzone.entity";
@@ -11,13 +11,14 @@ import { UserQuestionnaireAnswerEntity } from "./entities/user-questionnaire-ans
 import { UserQuestionnaireResponseEntity } from "./entities/user-questionnaire-response.entity";
 import { UserController } from "./controllers/user.controller";
 import { UserService } from "./services/user.service";
+import { UserQuestionnaireResponseService } from "./services/user-questionnaire-response.service";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       UserCoachProfileEntity,
-      UsereHealthProblemEntity,
+      UserHealthProblemEntity,
       UserHeightEntity,
       UserWeightEntity,
       UserHrzoneEntity,
@@ -27,7 +28,7 @@ import { UserService } from "./services/user.service";
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService],
-  exports: [UserService],
+  providers: [UserService, UserQuestionnaireResponseService],
+  exports: [UserService, UserQuestionnaireResponseService],
 })
 export class UserModule {}

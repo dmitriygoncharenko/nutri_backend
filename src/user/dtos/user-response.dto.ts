@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ApiPropertyEmail } from "src/shared/decorators/email.decorator";
+import { ApiPropertyId } from "src/shared/decorators/uuid.decorator";
 import { AbstractDto } from "src/shared/dtos/abstract.dto";
 
 export class UserResponseDto extends AbstractDto {
@@ -9,6 +10,6 @@ export class UserResponseDto extends AbstractDto {
   @ApiProperty({ type: "string" })
   phone: string;
 
-  @ApiProperty({ type: "uuid" })
+  @ApiPropertyId()
   profileId: string;
 }
