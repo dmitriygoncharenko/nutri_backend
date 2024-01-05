@@ -22,7 +22,7 @@ export class UserQuestionnaireResponseEntity extends AbstractEntity {
   questionnaireId: string;
 
   @ManyToOne(() => QuestionnaireEntity, (entity) => entity.responses)
-  @JoinColumn({ name: "questionnaireId", referencedColumnName: "id" })
+  @JoinColumn({ name: "questionnaireId" })
   questionnaire: QuestionnaireEntity;
 
   @ApiPropertyId()

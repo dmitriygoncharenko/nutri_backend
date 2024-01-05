@@ -8,6 +8,7 @@ export const databaseConfig = (): DataSourceOptions => ({
   logging: true,
   synchronize: true,
   ssl: false,
+  dropSchema: false,
   entities: ["./dist/**/*.entity.js"],
   migrations: ["./dist/migrations/*.js"],
   database: get("DB_DATABASE").asString(),

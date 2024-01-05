@@ -20,6 +20,6 @@ export class UserWeightEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.weight)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 }

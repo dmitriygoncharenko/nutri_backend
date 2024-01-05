@@ -20,6 +20,6 @@ export class UserHeightEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.height)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 }

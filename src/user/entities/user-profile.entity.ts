@@ -48,6 +48,6 @@ export class UserProfileEntity extends AbstractEntity {
   userId: string;
 
   @OneToOne(() => UserEntity, (entity) => entity.profile)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 }

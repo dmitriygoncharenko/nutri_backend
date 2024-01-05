@@ -29,7 +29,7 @@ export class UserHealthProblemEntity extends AbstractEntity {
 
   @ApiProperty({ type: () => UserEntity })
   @ManyToOne(() => UserEntity, (entity) => entity.creatorAnalysis)
-  @JoinColumn({ name: "creatorId", referencedColumnName: "id" })
+  @JoinColumn({ name: "creatorId" })
   creator: UserEntity;
 
   @ApiPropertyId()
@@ -37,6 +37,6 @@ export class UserHealthProblemEntity extends AbstractEntity {
   responseId: string;
 
   @ManyToOne(() => UserQuestionnaireResponseEntity, (entity) => entity.analysis)
-  @JoinColumn({ name: "responseId", referencedColumnName: "id" })
+  @JoinColumn({ name: "responseId" })
   response: UserQuestionnaireResponseEntity;
 }

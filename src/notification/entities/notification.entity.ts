@@ -13,6 +13,6 @@ export class NotificationEntity extends AbstractEntity {
   description?: string;
 
   @ManyToOne(() => UserEntity, (entity) => entity.notifications)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 }

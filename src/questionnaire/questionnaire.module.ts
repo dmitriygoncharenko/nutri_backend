@@ -7,6 +7,9 @@ import { QuestionGradeEntity } from "./entities/question-grade.entity";
 import { QuestionnaireController } from "./controllers/questionnaire.controller";
 import { QuestionnaireService } from "./services/questionnaire.service";
 import { UserModule } from "src/user/user.module";
+import { QuestionService } from "./services/question.service";
+import { QuestionGroupService } from "./services/question-group.service";
+import { QuestionGroupController } from "./controllers/question-group.controller";
 
 @Module({
   imports: [
@@ -18,7 +21,7 @@ import { UserModule } from "src/user/user.module";
     ]),
     UserModule,
   ],
-  controllers: [QuestionnaireController],
-  providers: [QuestionnaireService],
+  controllers: [QuestionnaireController, QuestionGroupController],
+  providers: [QuestionnaireService, QuestionService, QuestionGroupService],
 })
 export class QuestionnaireModule {}

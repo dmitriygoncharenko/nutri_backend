@@ -9,7 +9,7 @@ export class TrainingEntity extends AbstractEntity {
   typeId: string;
 
   @ManyToOne(() => TrainingTypeEntity, (entity) => entity.trainings)
-  @JoinColumn({ name: "typeId", referencedColumnName: "id" })
+  @JoinColumn({ name: "typeId" })
   type: TrainingTypeEntity;
 
   @Column({ type: "int" }) // meters

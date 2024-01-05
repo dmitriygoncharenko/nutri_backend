@@ -56,7 +56,7 @@ export class UserEntity extends AbstractEntity {
     cascade: true,
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "profileId", referencedColumnName: "id" })
+  @JoinColumn({ name: "profileId" })
   profile: UserProfileEntity;
 
   @OneToMany(() => UserWeightEntity, (entity) => entity.user, {

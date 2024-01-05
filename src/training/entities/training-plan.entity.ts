@@ -9,14 +9,14 @@ export class TrainingPlanEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (entity) => entity.training_plans)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 
   @Column({ type: "uuid" })
   creatorId: string;
 
   @ManyToOne(() => UserEntity, (entity) => entity.creator_training_plans)
-  @JoinColumn({ name: "creatorId", referencedColumnName: "id" })
+  @JoinColumn({ name: "creatorId" })
   creator: UserEntity;
 
   @Column({ type: "uuid" })

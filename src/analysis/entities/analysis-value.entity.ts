@@ -18,6 +18,6 @@ export class AnalysisValueEntity extends AbstractEntity {
   analysisId: string;
 
   @ManyToOne(() => AnalysisEntity, (entity) => entity.values)
-  @JoinColumn({ name: "analysisId", referencedColumnName: "id" })
+  @JoinColumn({ name: "analysisId" })
   analysis: AnalysisEntity;
 }

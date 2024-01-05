@@ -12,7 +12,7 @@ export class AnalysisEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.analysis)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 
   @OneToMany(() => AnalysisValueEntity, (entity) => entity.analysis, {

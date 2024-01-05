@@ -16,12 +16,15 @@ import { QuestionnaireResponseDto } from "../dtos/questionnaire-response.dto";
 import { UserQuestionnaireResponseEntity } from "src/user/entities/user-questionnaire-response.entity";
 import { UserQuestionnaireResponseService } from "src/user/services/user-questionnaire-response.service";
 import { UpdateResult } from "typeorm";
+import { QuestionEntity } from "../entities/question.entity";
+import { QuestionService } from "../services/question.service";
 
 @ApiTags("Questionnaire")
 @Controller("questionnaire")
 export class QuestionnaireController {
   constructor(
     private readonly questionnaireService: QuestionnaireService,
+    private readonly questionService: QuestionService,
     private readonly questionnaireResponseService: UserQuestionnaireResponseService
   ) {}
 
@@ -89,5 +92,14 @@ export class QuestionnaireController {
   @Delete(":questionnaireId")
   async delete(@Param("questionnaireId") id: string): Promise<UpdateResult> {
     return await this.questionnaireService.delete(id);
+  }
+
+  @Get(":groupId/questions")
+  @ApiOperation({ summary: "Get group questions" })
+  @ApiResponse({ status: 200, type: QuestionEntity, isArray: true })
+  async getGroupQuestions(
+    @Param("groupId") id: string
+  ): Promise<QuestionEntity[]> {
+    return await this.questionService.getQuestionsByGroupId(id);
   }
 }

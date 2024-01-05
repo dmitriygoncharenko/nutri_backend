@@ -10,6 +10,8 @@ import {
   ApiPropertyId,
   ApiPropertyOptionalId,
 } from "src/shared/decorators/uuid.decorator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional } from "class-validator";
 
 const nullable: boolean = true;
 
@@ -24,9 +26,11 @@ export class QuestionGroupEntity extends AbstractEntity {
   questionnaireId: string;
 
   @ManyToOne(() => QuestionnaireEntity, (entity) => entity.groups)
-  @JoinColumn({ name: "questionnaireId", referencedColumnName: "id" })
+  @JoinColumn({ name: "questionnaireId" })
   questionnaire: QuestionnaireEntity;
 
+  @ApiProperty({ type: () => QuestionEntity, isArray: true })
+  @IsOptional()
   @OneToMany(() => QuestionEntity, (entity) => entity.group, {
     cascade: true,
     onDelete: "CASCADE",

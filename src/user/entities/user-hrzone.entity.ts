@@ -8,7 +8,7 @@ export class UserHrzoneEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (entity) => entity.hrzones)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 
   @Column({ type: "text" })

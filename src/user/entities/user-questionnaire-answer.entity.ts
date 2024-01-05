@@ -12,14 +12,14 @@ export class UserQuestionnaireAnswerEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.answers)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 
   @Column({ type: "uuid" })
   questionId: string;
 
   @ManyToOne(() => QuestionEntity, (entity) => entity.answers)
-  @JoinColumn({ name: "questionId", referencedColumnName: "id" })
+  @JoinColumn({ name: "questionId" })
   question: QuestionEntity;
 
   @Column({ type: "text", nullable: true })
@@ -32,7 +32,7 @@ export class UserQuestionnaireAnswerEntity extends AbstractEntity {
   responseId: string;
 
   @ManyToOne(() => UserQuestionnaireResponseEntity, (entity) => entity.answers)
-  @JoinColumn({ name: "responseId", referencedColumnName: "id" })
+  @JoinColumn({ name: "responseId" })
   response: UserQuestionnaireResponseEntity;
 
   // check if grade is setup for question type with grade

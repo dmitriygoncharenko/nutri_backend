@@ -13,11 +13,21 @@ export class QuestionnaireService {
   ) {}
 
   async findAll(): Promise<QuestionnaireEntity[]> {
-    return await this.questionnaireRepository.find();
+    return await this.questionnaireRepository
+      .createQueryBuilder("q")
+      .loadRelationCountAndMap("q.groupCount", "q.groups")
+      .getMany();
   }
 
   async findOne(id: string): Promise<QuestionnaireEntity> {
-    return await this.questionnaireRepository.findOne({ where: { id } });
+    const q = await this.questionnaireRepository
+      .createQueryBuilder("q")
+      .leftJoinAndSelect("q.groups", "group", "group.questionnaireId = q.id")
+      .loadRelationCountAndMap("group.questionCount", "group.questions")
+      .where("q.id = :id", { id })
+      .getOne();
+
+    return q;
   }
 
   @Transactional()

@@ -11,7 +11,7 @@ export class DiaryEntity extends AbstractEntity {
   userId: string;
 
   @ManyToOne(() => UserEntity, (entity) => entity.diaries)
-  @JoinColumn({ name: "userId", referencedColumnName: "id" })
+  @JoinColumn({ name: "userId" })
   user: UserEntity;
 
   @Column({ type: "date" })
