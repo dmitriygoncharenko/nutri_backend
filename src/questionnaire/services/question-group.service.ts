@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QuestionGroupEntity } from "../entities/question-group.entity";
-import { Repository } from "typeorm";
+import { Repository, UpdateResult } from "typeorm";
+import { Transactional } from "typeorm-transactional";
 
 @Injectable()
 export class QuestionGroupService {
@@ -16,18 +17,26 @@ export class QuestionGroupService {
       .leftJoinAndSelect("g.questions", "question", "question.groupId = g.id", {
         groupId,
       })
+      .orderBy("question.createdAt", "ASC")
       .loadRelationCountAndMap("g.questionCount", "g.questions")
       .where("g.id = :groupId", { groupId })
       .getOne();
   }
 
+  @Transactional()
   async save(questionGroup: Partial<QuestionGroupEntity>) {
-    if (questionGroup.id) {
-      return await this.questionGroupRepository.save(questionGroup);
-    } else {
-      return await this.questionGroupRepository.save(
-        this.questionGroupRepository.create(questionGroup)
-      );
+    let entity = {
+      ...new QuestionGroupEntity(),
+      ...questionGroup,
+    };
+    if (!entity.id) {
+      entity = this.questionGroupRepository.create(entity);
     }
+    return await this.questionGroupRepository.save(entity);
+  }
+
+  @Transactional()
+  async delete(id: string): Promise<UpdateResult> {
+    return await this.questionGroupRepository.softDelete(id);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
@@ -6,11 +7,16 @@ import {
 } from "typeorm";
 import { ApiPropertyOptionalId } from "../decorators/uuid.decorator";
 import { ApiPropertyOptionalDate } from "../decorators/date.decorator";
+import { v4 as uuidv4 } from "uuid";
 
 export abstract class AbstractEntity {
   @ApiPropertyOptionalId()
-  @PrimaryGeneratedColumn("uuid", { name: "id" })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
+
+  @BeforeInsert() genarateId() {
+    this.id = uuidv4();
+  }
 
   @ApiPropertyOptionalDate({ type: Date })
   @DeleteDateColumn({ type: "timestamptz" })

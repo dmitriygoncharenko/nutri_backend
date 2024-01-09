@@ -10,6 +10,7 @@ import { UserModule } from "src/user/user.module";
 import { QuestionService } from "./services/question.service";
 import { QuestionGroupService } from "./services/question-group.service";
 import { QuestionGroupController } from "./controllers/question-group.controller";
+import { QuestionController } from "./controllers/question.controller";
 
 @Module({
   imports: [
@@ -21,7 +22,11 @@ import { QuestionGroupController } from "./controllers/question-group.controller
     ]),
     UserModule,
   ],
-  controllers: [QuestionnaireController, QuestionGroupController],
+  controllers: [
+    QuestionnaireController,
+    QuestionGroupController,
+    QuestionController,
+  ],
   providers: [QuestionnaireService, QuestionService, QuestionGroupService],
 })
 export class QuestionnaireModule {}

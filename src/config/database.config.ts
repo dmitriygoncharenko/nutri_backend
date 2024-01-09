@@ -6,7 +6,7 @@ export const databaseConfig = (): DataSourceOptions => ({
   name: "default",
   type: "postgres",
   logging: true,
-  synchronize: true,
+  synchronize: false,
   ssl: false,
   dropSchema: false,
   entities: ["./dist/**/*.entity.js"],

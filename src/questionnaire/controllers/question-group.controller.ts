@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { QuestionGroupEntity } from "../entities/question-group.entity";
 import { QuestionGroupService } from "../services/question-group.service";
+import { UpdateResult } from "typeorm";
 
 @ApiTags("Question Groups")
-@Controller("question/group")
+@Controller("group")
 export class QuestionGroupController {
   constructor(private readonly questionGroupService: QuestionGroupService) {}
 
@@ -28,5 +29,16 @@ export class QuestionGroupController {
   })
   async save(@Body() body: QuestionGroupEntity) {
     return this.questionGroupService.save(body);
+  }
+
+  @ApiOperation({ summary: "Delete group by id" })
+  @ApiResponse({
+    status: 200,
+    description: "Success",
+    type: UpdateResult,
+  })
+  @Delete(":groupId")
+  async delete(@Param("groupId") id: string): Promise<UpdateResult> {
+    return await this.questionGroupService.delete(id);
   }
 }
