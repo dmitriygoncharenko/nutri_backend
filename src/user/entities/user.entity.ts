@@ -21,23 +21,37 @@ import { TrainingPlanEntity } from "src/training/entities/training-plan.entity";
 import { UserCoachProfileEntity } from "./user-coach-profile.entity";
 import { QuestionnaireEntity } from "src/questionnaire/entities/questionnaire.entity";
 import { UserHealthProblemEntity } from "./user-health-problem.entity";
-import { ApiPropertyEmail } from "src/shared/decorators/email.decorator";
-import { ApiPropertyString } from "src/shared/decorators/api.decorator";
+import {
+  ApiPropertyEmail,
+  ApiPropertyOptionalEmail,
+} from "src/shared/decorators/email.decorator";
+import {
+  ApiPropertyInt,
+  ApiPropertyOptionalInt,
+  ApiPropertyOptionalString,
+  ApiPropertyString,
+} from "src/shared/decorators/api.decorator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ApiPropertyId } from "src/shared/decorators/uuid.decorator";
+import {
+  ApiPropertyId,
+  ApiPropertyOptionalId,
+} from "src/shared/decorators/uuid.decorator";
+import { TelegramFlowKeyEnum } from "src/telegram/enums/telegram-flow-key.enum";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
-  @ApiPropertyEmail()
-  @Column({ nullable: false })
+  @ApiPropertyOptionalEmail()
+  @Column({ nullable: true })
   @IsEmail({}, { message: "Incorrect email" })
-  @IsNotEmpty({ message: "The email is required" })
-  email: string;
+  email?: string;
 
-  @ApiPropertyString()
-  @Column({ type: "text" })
-  @IsPhoneNumber(null, { message: "Incorrect phone number" })
-  phone: string;
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", unique: true, nullable: true })
+  auth0Id?: string;
+
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  phone?: string;
 
   @ManyToMany(() => UserEntity, (user) => user.clients)
   @JoinTable()
@@ -47,11 +61,31 @@ export class UserEntity extends AbstractEntity {
   @JoinTable()
   coaches: UserEntity;
 
-  @ApiPropertyId()
-  @Column({ type: "uuid" })
-  profileId: string;
+  @ApiPropertyOptionalId()
+  @Column({ type: "uuid", nullable: true })
+  profileId?: string;
 
-  @OneToOne(() => UserProfileEntity, (entity) => entity.user, {
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", unique: true, nullable: true })
+  telegramId?: number;
+
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  telegramUsername?: string;
+
+  @ApiProperty({
+    enum: TelegramFlowKeyEnum,
+    enumName: "TelegramFlowKeyEnum",
+    type: () => TelegramFlowKeyEnum,
+  })
+  @Column({
+    type: "enum",
+    enum: TelegramFlowKeyEnum,
+    default: TelegramFlowKeyEnum.START,
+  })
+  telegramState: TelegramFlowKeyEnum;
+
+  @OneToOne(() => UserProfileEntity, (entity) => entity.userId, {
     nullable: true,
     cascade: true,
     onDelete: "CASCADE",
@@ -113,7 +147,7 @@ export class UserEntity extends AbstractEntity {
   })
   creator_training_plans: TrainingPlanEntity[];
 
-  @OneToOne(() => UserCoachProfileEntity, (entity) => entity.user, {
+  @OneToOne(() => UserCoachProfileEntity, (entity) => entity.userId, {
     cascade: true,
     onDelete: "CASCADE",
   })

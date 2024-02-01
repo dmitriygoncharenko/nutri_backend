@@ -10,9 +10,6 @@ export class UserCoachProfileEntity extends AbstractEntity {
   @Column({ type: "uuid" })
   userId: string;
 
-  @OneToOne(() => UserEntity, (entity) => entity.coach_profile)
-  user: UserEntity;
-
   // Personal Trainer/Fitness Professional
   // Nutritionist
   // Health Coach

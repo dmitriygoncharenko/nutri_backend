@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Init1703917368497 implements MigrationInterface {
-    name = 'Init1703917368497'
+export class Src1706769188861 implements MigrationInterface {
+    name = 'Src1706769188861'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -22,8 +22,7 @@ export class Init1703917368497 implements MigrationInterface {
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "first_name" character varying,
-                "last_name" character varying,
+                "fullname" character varying,
                 "avatar" character varying,
                 "gender" "public"."user_profiles_gender_enum" NOT NULL DEFAULT 'MALE',
                 "dob" TIMESTAMP WITH TIME ZONE,
@@ -35,38 +34,37 @@ export class Init1703917368497 implements MigrationInterface {
                 "initial_request" text,
                 "initial_complaints" text,
                 "userId" uuid NOT NULL,
-                CONSTRAINT "REL_8481388d6325e752cd4d7e26c6" UNIQUE ("userId"),
                 CONSTRAINT "PK_1ec6662219f4605723f1e41b6cb" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
-            CREATE TYPE "public"."user_weight_weight_metric_enum" AS ENUM('KG', 'LB')
+            CREATE TYPE "public"."user_weights_weight_metric_enum" AS ENUM('KG', 'LB')
         `);
         await queryRunner.query(`
-            CREATE TABLE "user_weight" (
+            CREATE TABLE "user_weights" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "weight" numeric(5, 2) NOT NULL,
-                "weight_metric" "public"."user_weight_weight_metric_enum" NOT NULL DEFAULT 'KG',
+                "weight_metric" "public"."user_weights_weight_metric_enum" NOT NULL DEFAULT 'KG',
                 "userId" uuid NOT NULL,
-                CONSTRAINT "PK_63c8e9feeae2beb3f45a6846e3c" PRIMARY KEY ("id")
+                CONSTRAINT "PK_c706b25a032e9440ddc219762c0" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
-            CREATE TYPE "public"."user_height_height_metric_enum" AS ENUM('M', 'CM', 'FT', 'IN')
+            CREATE TYPE "public"."user_heights_height_metric_enum" AS ENUM('M', 'CM', 'FT', 'IN')
         `);
         await queryRunner.query(`
-            CREATE TABLE "user_height" (
+            CREATE TABLE "user_heights" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "height" integer NOT NULL,
-                "height_metric" "public"."user_height_height_metric_enum" NOT NULL DEFAULT 'CM',
+                "height_metric" "public"."user_heights_height_metric_enum" NOT NULL DEFAULT 'CM',
                 "userId" uuid NOT NULL,
-                CONSTRAINT "PK_d0a7d27c9e5cf71e3ac342fe684" PRIMARY KEY ("id")
+                CONSTRAINT "PK_44f7c5d92dea13cb994a93dc7f9" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
@@ -251,16 +249,47 @@ export class Init1703917368497 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
+            CREATE TYPE "public"."users_telegramstate_enum" AS ENUM(
+                'start',
+                'gender',
+                'weight',
+                'dob',
+                'height',
+                'email',
+                'email_code',
+                'coach',
+                'goal',
+                'goal_comment'
+            )
+        `);
+        await queryRunner.query(`
             CREATE TABLE "users" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "email" character varying NOT NULL,
-                "phone" text NOT NULL,
-                "profileId" uuid NOT NULL,
+                "email" character varying,
+                "auth0Id" text,
+                "phone" text,
+                "profileId" uuid,
+                "telegramId" integer,
+                "telegramUsername" text,
+                "telegramState" "public"."users_telegramstate_enum" NOT NULL DEFAULT 'start',
+                CONSTRAINT "UQ_d7925ac1be04ad9d0f11c14d707" UNIQUE ("auth0Id"),
+                CONSTRAINT "UQ_df18d17f84763558ac84192c754" UNIQUE ("telegramId"),
                 CONSTRAINT "REL_b1bda35cdb9a2c1b777f5541d8" UNIQUE ("profileId"),
                 CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "analysis" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "caption" text NOT NULL,
+                "userId" uuid NOT NULL,
+                CONSTRAINT "PK_300795d51c57ef52911ed65851f" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
@@ -277,27 +306,6 @@ export class Init1703917368497 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
-            CREATE TABLE "analysis" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "caption" text NOT NULL,
-                "userId" uuid NOT NULL,
-                CONSTRAINT "PK_300795d51c57ef52911ed65851f" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "training_types" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "caption" text NOT NULL,
-                CONSTRAINT "PK_a79a847b5d16cfbb514bb9305b0" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
             CREATE TABLE "trainings" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
@@ -309,6 +317,16 @@ export class Init1703917368497 implements MigrationInterface {
                 "hr" integer NOT NULL,
                 "calories" integer NOT NULL,
                 CONSTRAINT "PK_b67237502b175163e47dc85018d" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "training_types" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "caption" text NOT NULL,
+                CONSTRAINT "PK_a79a847b5d16cfbb514bb9305b0" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
@@ -338,16 +356,12 @@ export class Init1703917368497 implements MigrationInterface {
             CREATE INDEX "IDX_228ca2917a85eb25c2365d73ab" ON "users_coaches_users" ("usersId_2")
         `);
         await queryRunner.query(`
-            ALTER TABLE "user_profiles"
-            ADD CONSTRAINT "FK_8481388d6325e752cd4d7e26c6d" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ALTER TABLE "user_weights"
+            ADD CONSTRAINT "FK_52a1d12efaab2946140fea97548" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
-            ALTER TABLE "user_weight"
-            ADD CONSTRAINT "FK_99ed6ee29f9bca948746f6b50b7" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "user_height"
-            ADD CONSTRAINT "FK_4abb33bd2fb1fcfc639f2f3e4a4" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ALTER TABLE "user_heights"
+            ADD CONSTRAINT "FK_69b1ee696a9c4292956dc1abaaf" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
             ALTER TABLE "notifications"
@@ -418,12 +432,12 @@ export class Init1703917368497 implements MigrationInterface {
             ADD CONSTRAINT "FK_b1bda35cdb9a2c1b777f5541d87" FOREIGN KEY ("profileId") REFERENCES "user_profiles"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
-            ALTER TABLE "analysis_values"
-            ADD CONSTRAINT "FK_41a50de11c635735765c9e7e591" FOREIGN KEY ("analysisId") REFERENCES "analysis"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
-        await queryRunner.query(`
             ALTER TABLE "analysis"
             ADD CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "analysis_values"
+            ADD CONSTRAINT "FK_41a50de11c635735765c9e7e591" FOREIGN KEY ("analysisId") REFERENCES "analysis"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
             ALTER TABLE "trainings"
@@ -464,10 +478,10 @@ export class Init1703917368497 implements MigrationInterface {
             ALTER TABLE "trainings" DROP CONSTRAINT "FK_0c29a4986f24a6c82f07584e6d6"
         `);
         await queryRunner.query(`
-            ALTER TABLE "analysis" DROP CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a"
+            ALTER TABLE "analysis_values" DROP CONSTRAINT "FK_41a50de11c635735765c9e7e591"
         `);
         await queryRunner.query(`
-            ALTER TABLE "analysis_values" DROP CONSTRAINT "FK_41a50de11c635735765c9e7e591"
+            ALTER TABLE "analysis" DROP CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a"
         `);
         await queryRunner.query(`
             ALTER TABLE "users" DROP CONSTRAINT "FK_b1bda35cdb9a2c1b777f5541d87"
@@ -521,13 +535,10 @@ export class Init1703917368497 implements MigrationInterface {
             ALTER TABLE "notifications" DROP CONSTRAINT "FK_692a909ee0fa9383e7859f9b406"
         `);
         await queryRunner.query(`
-            ALTER TABLE "user_height" DROP CONSTRAINT "FK_4abb33bd2fb1fcfc639f2f3e4a4"
+            ALTER TABLE "user_heights" DROP CONSTRAINT "FK_69b1ee696a9c4292956dc1abaaf"
         `);
         await queryRunner.query(`
-            ALTER TABLE "user_weight" DROP CONSTRAINT "FK_99ed6ee29f9bca948746f6b50b7"
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "user_profiles" DROP CONSTRAINT "FK_8481388d6325e752cd4d7e26c6d"
+            ALTER TABLE "user_weights" DROP CONSTRAINT "FK_52a1d12efaab2946140fea97548"
         `);
         await queryRunner.query(`
             DROP INDEX "public"."IDX_228ca2917a85eb25c2365d73ab"
@@ -548,19 +559,22 @@ export class Init1703917368497 implements MigrationInterface {
             DROP TABLE "users_clients_users"
         `);
         await queryRunner.query(`
-            DROP TABLE "trainings"
-        `);
-        await queryRunner.query(`
             DROP TABLE "training_types"
         `);
         await queryRunner.query(`
-            DROP TABLE "analysis"
+            DROP TABLE "trainings"
         `);
         await queryRunner.query(`
             DROP TABLE "analysis_values"
         `);
         await queryRunner.query(`
+            DROP TABLE "analysis"
+        `);
+        await queryRunner.query(`
             DROP TABLE "users"
+        `);
+        await queryRunner.query(`
+            DROP TYPE "public"."users_telegramstate_enum"
         `);
         await queryRunner.query(`
             DROP TABLE "user_coach_profiles"
@@ -608,16 +622,16 @@ export class Init1703917368497 implements MigrationInterface {
             DROP TABLE "notifications"
         `);
         await queryRunner.query(`
-            DROP TABLE "user_height"
+            DROP TABLE "user_heights"
         `);
         await queryRunner.query(`
-            DROP TYPE "public"."user_height_height_metric_enum"
+            DROP TYPE "public"."user_heights_height_metric_enum"
         `);
         await queryRunner.query(`
-            DROP TABLE "user_weight"
+            DROP TABLE "user_weights"
         `);
         await queryRunner.query(`
-            DROP TYPE "public"."user_weight_weight_metric_enum"
+            DROP TYPE "public"."user_weights_weight_metric_enum"
         `);
         await queryRunner.query(`
             DROP TABLE "user_profiles"

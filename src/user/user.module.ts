@@ -12,9 +12,15 @@ import { UserQuestionnaireResponseEntity } from "./entities/user-questionnaire-r
 import { UserController } from "./controllers/user.controller";
 import { UserService } from "./services/user.service";
 import { UserQuestionnaireResponseService } from "./services/user-questionnaire-response.service";
+import { AuthModule } from "src/auth/auth.module";
+import { HttpModule } from "@nestjs/axios";
+import { UserProfileService } from "./services/user-profile.service";
+import { UserWeightService } from "./services/user-weight.service";
+import { UserHeightService } from "./services/user-height.service";
 
 @Module({
   imports: [
+    HttpModule,
     TypeOrmModule.forFeature([
       UserEntity,
       UserCoachProfileEntity,
@@ -28,7 +34,19 @@ import { UserQuestionnaireResponseService } from "./services/user-questionnaire-
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService, UserQuestionnaireResponseService],
-  exports: [UserService, UserQuestionnaireResponseService],
+  providers: [
+    UserService,
+    UserQuestionnaireResponseService,
+    UserProfileService,
+    UserWeightService,
+    UserHeightService,
+  ],
+  exports: [
+    UserService,
+    UserQuestionnaireResponseService,
+    UserProfileService,
+    UserWeightService,
+    UserHeightService,
+  ],
 })
 export class UserModule {}

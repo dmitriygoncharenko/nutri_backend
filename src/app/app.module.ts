@@ -11,9 +11,12 @@ import { HmatrixModule } from "src/hmatrix/hmatrix.module";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { databaseConfig } from "src/config/database.config";
+import { mailConfig } from "src/config/mail.config";
 import { addTransactionalDataSource } from "typeorm-transactional";
 import { DataSource } from "typeorm";
-import config from "../config";
+import { AuthModule } from "src/auth/auth.module";
+import { TelegramModule } from "src/telegram/telegram.module";
+import { SendGridModule } from "@anchan828/nest-sendgrid";
 
 @Module({
   imports: [
@@ -28,10 +31,6 @@ import config from "../config";
         ...databaseConfig(),
         autoLoadEntities: true,
       }),
-      // cli: {
-      //   migrationsDir: "src/migrations",
-      //   entitiesDir: "src/**/entities/*.ts",
-      // },
       async dataSourceFactory(options) {
         if (!options) {
           throw new Error("Invalid options passed");
@@ -39,6 +38,12 @@ import config from "../config";
         return addTransactionalDataSource(new DataSource(options));
       },
     }),
+    SendGridModule.forRootAsync({
+      useFactory: async () => ({
+        ...mailConfig(),
+      }),
+    }),
+    AuthModule,
     AnalysisModule,
     DiaryModule,
     NotificationModule,
@@ -46,6 +51,7 @@ import config from "../config";
     QuestionnaireModule,
     UserModule,
     HmatrixModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],

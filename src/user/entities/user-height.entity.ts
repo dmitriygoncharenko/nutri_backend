@@ -4,7 +4,7 @@ import { UserEntity } from "./user.entity";
 import { WeightMetricEnum } from "src/shared/enums/weight-metric.enum";
 import { HeightMetricEnum } from "src/shared/enums/height-metric.enum";
 
-@Entity("user_height")
+@Entity("user_heights")
 export class UserHeightEntity extends AbstractEntity {
   @Column({ type: "int" })
   height: number;
