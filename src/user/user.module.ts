@@ -17,12 +17,15 @@ import { HttpModule } from "@nestjs/axios";
 import { UserProfileService } from "./services/user-profile.service";
 import { UserWeightService } from "./services/user-weight.service";
 import { UserHeightService } from "./services/user-height.service";
+import { UserEmailCodeEntity } from "./entities/user-email-code.entity";
+import { UserEmailCodeService } from "./services/user-code.service";
 
 @Module({
   imports: [
     HttpModule,
     TypeOrmModule.forFeature([
       UserEntity,
+      UserEmailCodeEntity,
       UserCoachProfileEntity,
       UserHealthProblemEntity,
       UserHeightEntity,
@@ -40,6 +43,7 @@ import { UserHeightService } from "./services/user-height.service";
     UserProfileService,
     UserWeightService,
     UserHeightService,
+    UserEmailCodeService,
   ],
   exports: [
     UserService,
@@ -47,6 +51,7 @@ import { UserHeightService } from "./services/user-height.service";
     UserProfileService,
     UserWeightService,
     UserHeightService,
+    UserEmailCodeService,
   ],
 })
 export class UserModule {}

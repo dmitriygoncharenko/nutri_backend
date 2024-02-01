@@ -9,6 +9,8 @@ import { UserWeightService } from "src/user/services/user-weight.service";
 import { UserHeightService } from "src/user/services/user-height.service";
 import { SendGridService } from "@anchan828/nest-sendgrid";
 import { randomNumber } from "src/shared/utilities/random.utility";
+import { UserEmailCodeService } from "src/user/services/user-code.service";
+import { validateEmail } from "src/shared/utilities/email.utility";
 
 const code = randomNumber(6);
 console.log("🚀 ~ TelegramOnboardingFlowService ~ code:", code);
@@ -20,6 +22,7 @@ export class TelegramOnboardingFlowService {
     private userProfileService: UserProfileService,
     private userWeightService: UserWeightService,
     private userHeightService: UserHeightService,
+    private userEmailCodeService: UserEmailCodeService,
     private readonly sendGridService: SendGridService
   ) {}
 
@@ -72,18 +75,66 @@ export class TelegramOnboardingFlowService {
         field: "email",
         action: async (userId: string, value: { email: string }) => {
           const { email } = value;
-          const result = await this.sendGridService.send({
-            to: email,
-            from: "test@example.com",
+          const validEmail = validateEmail(email);
+          const code = String(randomNumber(6));
+          await this.userEmailCodeService.create({ userId, code });
+          await this.sendGridService.send({
+            to: validEmail,
+            from: "noreply@hollandandbarrett.com",
             subject: "Verification Code",
-            text: randomNumber(6),
-            // html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+            text: code,
           });
-          console.log(
-            "🚀 ~ TelegramOnboardingFlowService ~ action: ~ result:",
-            result[0].body
-          );
         },
+      },
+      {
+        key: TelegramFlowKeyEnum.EMAIL_CODE,
+        message:
+          "Введите код, который мы отправили на ваш Email для верификации",
+        field: "code",
+        action: async (userId: string, value: { code: string }) => {
+          const { code } = value;
+          const userCodeExists = await this.userEmailCodeService.findOne({
+            userId,
+            code,
+          });
+          if (!userCodeExists)
+            throw new BadRequestException({
+              message: "Код не найден",
+            });
+          await this.userService.update(userId, { email_verified: true });
+          await this.userEmailCodeService.softDelete(userCodeExists.id);
+        },
+      },
+      {
+        key: TelegramFlowKeyEnum.GOAL,
+        message: "Какие ваши главные цели в работе с Nutrinetic?",
+        field: "goal",
+        action: async (userId: string, value: { goal: string[] }) => {
+          console.log(value);
+        },
+        poll: {
+          values: [
+            "Убрать лишний вес",
+            "Правильный образ жизни",
+            "Сбалансировать диету",
+            "Снизить биологический возраст",
+            "Улучшить кожу",
+            "Следить за калориями",
+            "Убрать дефициты в организме",
+          ],
+          options: {
+            is_anonymous: false,
+            type: "regular",
+            allows_multiple_answers: true,
+          },
+        },
+      },
+      {
+        key: TelegramFlowKeyEnum.GOAL_COMMENT,
+        message:
+          "Спасибо за ваши ответы. Теперь вы можете начать использование Nutrinetic. Посмотрите краткий видео ролик ниже о функциях нашей системы",
+        field: null,
+        action: null,
       },
     ];
   }

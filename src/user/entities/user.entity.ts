@@ -26,6 +26,7 @@ import {
   ApiPropertyOptionalEmail,
 } from "src/shared/decorators/email.decorator";
 import {
+  ApiPropertyBoolean,
   ApiPropertyInt,
   ApiPropertyOptionalInt,
   ApiPropertyOptionalString,
@@ -44,6 +45,10 @@ export class UserEntity extends AbstractEntity {
   @Column({ nullable: true })
   @IsEmail({}, { message: "Incorrect email" })
   email?: string;
+
+  @ApiPropertyBoolean()
+  @Column({ type: "boolean", default: false })
+  email_verified: boolean;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", unique: true, nullable: true })

@@ -14,12 +14,6 @@ import { TelegramOnboardingFlowService } from "./flows/onboarding-flow.service";
 import { BadRequestException } from "@nestjs/common";
 import { UserProfileService } from "src/user/services/user-profile.service";
 
-const validateEmail = (email: string) => {
-  const re =
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,2,3,4,5,6,7,8,9}]+\.[0-9]{1,2,3,4,5,6,7,8,9}]+\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-};
-
 @Update()
 export class TelegramUpdate {
   constructor(
@@ -38,6 +32,7 @@ export class TelegramUpdate {
       const index = steps.findIndex((el) => el.key === user.telegramState);
       if (index >= 0) {
         const currentStep = steps[index];
+        if (!currentStep.action) return;
         await currentStep.action(user.id, {
           [currentStep.field]: value,
         });
@@ -45,23 +40,35 @@ export class TelegramUpdate {
         const nextStep = steps[index + 1];
         if (!nextStep)
           throw new BadRequestException({ message: "No more steps" });
-        await this.userService.update(user.id, { telegramState: nextStep.key });
-        if (nextStep.buttons?.length) {
-          await ctx.reply(nextStep.message, {
+        if (nextStep?.buttons?.length) {
+          await ctx.api.sendMessage(telegramId, nextStep.message, {
             reply_markup: InlineKeyboard.from([
               nextStep.buttons.map((el) =>
                 InlineKeyboard.text(el.label, el.value)
               ),
             ]),
           });
+        } else if (nextStep?.poll) {
+          ctx.api.sendPoll(telegramId, nextStep.message, nextStep.poll.values, {
+            ...nextStep.poll.options,
+            protect_content: true,
+          });
         } else {
-          await ctx.reply(nextStep.message, {
-            reply_markup: { remove_keyboard: true },
+          await ctx.api.sendMessage(telegramId, nextStep.message, {
+            reply_markup: currentStep.poll
+              ? undefined
+              : {
+                  force_reply: true,
+                },
           });
         }
+        await this.userService.update(user.id, { telegramState: nextStep.key });
       }
     } catch (err) {
-      console.log(err);
+      ctx.api.sendMessage(
+        telegramId,
+        `Произошла ошибка: ${err?.message || "500"}. Попробуйте ещё раз.`
+      );
     }
   }
 
@@ -117,21 +124,46 @@ export class TelegramUpdate {
       const index = steps.findIndex((el) => el.key === user.telegramState);
       if (index < 0)
         throw new BadRequestException({ message: "Error on start" });
-      ctx.reply(steps[index].message);
+      ctx.api.sendMessage(telegramId, steps[index].message);
     } catch (err) {
       console.log(err);
     }
   }
   @On("callback_query")
   async onCallbackQuery(ctx: Context) {
-    const { id, username, first_name, last_name } =
-      ctx.update.callback_query.from;
+    const { id } = ctx.update.callback_query.from;
     this.handleUserReply(id, ctx.update.callback_query.data, ctx);
   }
 
   @On("message")
   async onMessage(ctx: Context) {
-    const { id, username, first_name, last_name } = ctx.update.message.from;
+    const { id } = ctx.update.message.from;
     this.handleUserReply(id, ctx.message.text, ctx);
+  }
+
+  @On("poll_answer")
+  async onPollAnswer(ctx: Context) {
+    const { id } = ctx.pollAnswer.user;
+    try {
+      const steps = await this.telegramOnboardingFlowService.getSteps();
+      const user = await this.userService.findOne({ telegramId: id });
+      if (!user)
+        throw new BadRequestException({ message: "Пользователь не найден" });
+      const index = steps.findIndex((el) => el.key === user.telegramState);
+      if (index < 0)
+        throw new BadRequestException({ message: "Индекс шага не найден" });
+      const currentStep = steps[index];
+      const answers = currentStep.poll?.values.filter((el, key) =>
+        ctx.pollAnswer.option_ids.includes(key)
+      );
+      if (answers?.length > 0) {
+        this.handleUserReply(id, answers.join("; "), ctx);
+      }
+    } catch (err) {
+      ctx.api.sendMessage(
+        id,
+        `Произошла ошибка: ${err?.message || "500"}. Попробуйте ещё раз.`
+      );
+    }
   }
 }
