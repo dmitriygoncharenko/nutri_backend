@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { UserQuestionnaireAnswerEntity } from "./user-questionnaire-answer.entity";
 import { QuestionnaireEntity } from "src/questionnaire/entities/questionnaire.entity";
 import { UserHealthProblemEntity } from "./user-health-problem.entity";

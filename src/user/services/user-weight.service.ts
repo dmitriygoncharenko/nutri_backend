@@ -15,4 +15,18 @@ export class UserWeightService {
       this.userWeightRepository.create({ userId, ...weight })
     );
   }
+
+  async findMany(userId: string) {
+    return await this.userWeightRepository.find({
+      where: { userId },
+    });
+  }
+
+  async getLastWeight(userId: string) {
+    const weights = await this.userWeightRepository.find({
+      where: { userId },
+      order: { createdAt: "DESC" },
+    });
+    return weights[0];
+  }
 }

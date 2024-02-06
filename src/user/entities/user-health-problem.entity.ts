@@ -1,5 +1,5 @@
 import { AbstractEntity } from "src/shared/entities/abstract.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { UserQuestionnaireResponseEntity } from "./user-questionnaire-response.entity";
 import { UserEntity } from "./user.entity";
 import { ApiProperty } from "@nestjs/swagger";

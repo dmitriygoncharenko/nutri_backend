@@ -4,7 +4,10 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "src/user/user.module";
 import { TelegramCron } from "./telegram.cron";
 import { TelegramUpdate } from "./telegram.update";
-import { TelegramOnboardingFlowService } from "./flows/onboarding-flow.service";
+import { TelegramFlowService } from "./flows/telegram-flow.service";
+import { TelegramStartFlowService } from "./flows/telegram-start-flow.service";
+import { TelegramRecipeFlowService } from "./flows/telegram-recipe-flow.service";
+import { TelegramWeightFlowService } from "./flows/telegram-weight-flow.service";
 
 @Module({
   imports: [
@@ -23,7 +26,19 @@ import { TelegramOnboardingFlowService } from "./flows/onboarding-flow.service";
       inject: [ConfigService],
     }),
   ],
-  providers: [TelegramUpdate, TelegramCron, TelegramOnboardingFlowService],
-  exports: [TelegramUpdate, TelegramOnboardingFlowService],
+  providers: [
+    TelegramUpdate,
+    TelegramRecipeFlowService,
+    TelegramStartFlowService,
+    TelegramFlowService,
+    TelegramWeightFlowService,
+  ],
+  exports: [
+    TelegramUpdate,
+    TelegramStartFlowService,
+    TelegramFlowService,
+    TelegramRecipeFlowService,
+    TelegramWeightFlowService,
+  ],
 })
 export class TelegramModule {}

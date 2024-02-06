@@ -1,5 +1,5 @@
 import { AbstractEntity } from "src/shared/entities/abstract.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { TrainingTypeEntity } from "./training-type.entity";
 import { DecimalTransformer } from "src/shared/transformers/decimal.transformer";
 

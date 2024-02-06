@@ -1,4 +1,4 @@
-import { Bot, Context, InlineKeyboard, Keyboard } from "grammy";
+import { Bot, Context, InlineKeyboard, InputFile, Keyboard } from "grammy";
 import {
   InjectBot,
   Update,
@@ -9,10 +9,15 @@ import {
   On,
 } from "@grammyjs/nestjs";
 import { UserService } from "src/user/services/user.service";
-import { TelegramFlowKeyEnum } from "./enums/telegram-flow-key.enum";
-import { TelegramOnboardingFlowService } from "./flows/onboarding-flow.service";
+import { TelegramFlowStateEnum } from "./enums/telegram-flow-state.enum";
 import { BadRequestException } from "@nestjs/common";
 import { UserProfileService } from "src/user/services/user-profile.service";
+import { createReadStream } from "fs";
+import { TelegramFlowCommandEnum } from "./enums/telegram-flow-command.enum";
+import { TelegramFlowService } from "./flows/telegram-flow.service";
+import { TelegramFlowStepInterface } from "./interfaces/telegram-flow-step.interface";
+import { TelegramFlowEnum } from "./enums/telegram-flow.enum";
+import { UserEntity } from "src/user/entities/user.entity";
 
 @Update()
 export class TelegramUpdate {
@@ -21,48 +26,101 @@ export class TelegramUpdate {
     private readonly bot: Bot<Context>,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
-    private readonly telegramOnboardingFlowService: TelegramOnboardingFlowService
+    private readonly telegramFlowService: TelegramFlowService
   ) {}
 
-  async handleUserReply(telegramId: number, value: string, ctx: Context) {
+  async sendMessage(
+    telegramId: number,
+    user: UserEntity,
+    step: TelegramFlowStepInterface,
+    ctx: Context
+  ) {
+    if (!step) throw new BadRequestException({ message: "No more steps" });
+    if (!step.message) return;
+    let message = null;
+    if (typeof step.message === "string") {
+      message = step.message;
+    } else {
+      message = await step.message(user);
+    }
+    if (step?.buttons?.length) {
+      await ctx.api.sendMessage(telegramId, message, {
+        reply_markup: InlineKeyboard.from([
+          step.buttons.map((el) => InlineKeyboard.text(el.label, el.value)),
+        ]),
+      });
+    } else if (step?.poll) {
+      ctx.api.sendPoll(telegramId, message, step.poll.values, {
+        ...step.poll.options,
+        is_anonymous: false,
+        protect_content: true,
+      });
+    } else if (step.file) {
+      await ctx.api.sendVideo(
+        telegramId,
+        new InputFile(createReadStream(step.file.url)),
+        { caption: message }
+      );
+    } else {
+      await ctx.api.sendMessage(telegramId, message);
+    }
+  }
+
+  async handleUserReply(
+    telegramId: number,
+    ctx: Context,
+    value?: string | string[]
+  ) {
     try {
-      const steps = this.telegramOnboardingFlowService.getSteps();
       const user = await this.userService.findOne({ telegramId });
       if (!user) throw new BadRequestException({ message: "User not found" });
+      if (user.telegramFlow === TelegramFlowEnum.DEFAULT) return;
+
+      const steps = this.telegramFlowService.getFlowSteps(user.telegramFlow);
+      // Check if user just have started some flow
+      if (user.telegramState === TelegramFlowStateEnum.DEFAULT) {
+        await this.sendMessage(telegramId, user, steps[0], ctx);
+        await this.userService.update(user.id, { telegramState: steps[0].key });
+        return;
+      }
+
+      // If not, then let's find current step index
       const index = steps.findIndex((el) => el.key === user.telegramState);
       if (index >= 0) {
         const currentStep = steps[index];
-        if (!currentStep.action) return;
-        await currentStep.action(user.id, {
-          [currentStep.field]: value,
-        });
+
+        // Collect poll answers
+        if (currentStep.poll) {
+          value = currentStep.poll?.values.filter((el, key) =>
+            ctx.pollAnswer.option_ids.includes(key)
+          );
+        }
+
+        if (currentStep.action) {
+          await currentStep.action(
+            user,
+            {
+              [currentStep.field]: value,
+            },
+            ctx
+          );
+        }
 
         const nextStep = steps[index + 1];
-        if (!nextStep)
-          throw new BadRequestException({ message: "No more steps" });
-        if (nextStep?.buttons?.length) {
-          await ctx.api.sendMessage(telegramId, nextStep.message, {
-            reply_markup: InlineKeyboard.from([
-              nextStep.buttons.map((el) =>
-                InlineKeyboard.text(el.label, el.value)
-              ),
-            ]),
-          });
-        } else if (nextStep?.poll) {
-          ctx.api.sendPoll(telegramId, nextStep.message, nextStep.poll.values, {
-            ...nextStep.poll.options,
-            protect_content: true,
+        this.sendMessage(telegramId, user, nextStep, ctx);
+        // If next step is the last - set user flow to default state
+        if (index + 2 === steps.length) {
+          await this.userService.update(user.id, {
+            telegramFlow: TelegramFlowEnum.DEFAULT,
+            telegramState: TelegramFlowStateEnum.DEFAULT,
           });
         } else {
-          await ctx.api.sendMessage(telegramId, nextStep.message, {
-            reply_markup: currentStep.poll
-              ? undefined
-              : {
-                  force_reply: true,
-                },
+          await this.userService.update(user.id, {
+            telegramState: nextStep.key,
           });
         }
-        await this.userService.update(user.id, { telegramState: nextStep.key });
+      } else {
+        throw new BadRequestException({ message: "Шаг не найден" });
       }
     } catch (err) {
       ctx.api.sendMessage(
@@ -70,35 +128,6 @@ export class TelegramUpdate {
         `Произошла ошибка: ${err?.message || "500"}. Попробуйте ещё раз.`
       );
     }
-  }
-
-  async sendMessage(userId: number, message: string): Promise<void> {
-    try {
-      await this.bot.api.sendMessage(userId, message);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      throw new Error("Failed to send message");
-    }
-  }
-
-  async sendRecipe() {
-    // const photoURL = `https://s3.timeweb.com/28cccca7-a4a6083c-5d86-48e1-9443-f3e3a71dacd5/${recipe.image}`;
-    // const caption = `## ${recipe.recipeDescription}`;
-    // const reply_markup = {
-    //   inline_keyboard: [
-    //     [
-    //       {
-    //         text: "Open Recipe",
-    //         url: `https://roxyai.space/recipe/${recipe.id}`, // Link URL
-    //       },
-    //     ],
-    //   ],
-    // };
-    // try {
-    //   await this.bot.api.sendPhoto(userId, photoURL, { caption, reply_markup });
-    // } catch (error) {
-    //   console.error("Error sending photo:", error);
-    // }
   }
 
   @Start()
@@ -112,19 +141,17 @@ export class TelegramUpdate {
       } = ctx.update.message.from;
       let user = await this.userService.findOne({ telegramId });
       if (!user) {
-        user = await this.userService.create({ telegramId, telegramUsername });
-        await this.userProfileService.create(user.id, {
-          fullname: `${first_name} ${last_name}`,
+        user = await this.userService.create({
+          telegramId,
+          telegramUsername,
+          profile: { telegramName: `${first_name} ${last_name}` },
         });
       }
-      user = await this.userService.update(user.id, {
-        telegramState: TelegramFlowKeyEnum.START,
+      await this.userService.update(user.id, {
+        telegramFlow: TelegramFlowEnum.START,
+        telegramState: TelegramFlowStateEnum.DEFAULT,
       });
-      const steps = this.telegramOnboardingFlowService.getSteps();
-      const index = steps.findIndex((el) => el.key === user.telegramState);
-      if (index < 0)
-        throw new BadRequestException({ message: "Error on start" });
-      ctx.api.sendMessage(telegramId, steps[index].message);
+      this.handleUserReply(telegramId, ctx);
     } catch (err) {
       console.log(err);
     }
@@ -132,38 +159,30 @@ export class TelegramUpdate {
   @On("callback_query")
   async onCallbackQuery(ctx: Context) {
     const { id } = ctx.update.callback_query.from;
-    this.handleUserReply(id, ctx.update.callback_query.data, ctx);
+    this.handleUserReply(id, ctx, ctx.update.callback_query.data);
   }
 
   @On("message")
   async onMessage(ctx: Context) {
-    const { id } = ctx.update.message.from;
-    this.handleUserReply(id, ctx.message.text, ctx);
+    const { id: telegramId } = ctx.update.message.from;
+    const commands = Object.keys(TelegramFlowCommandEnum);
+    if (!commands.includes(ctx.message.text)) {
+      this.handleUserReply(telegramId, ctx, ctx.message.text);
+    } else {
+      const user = await this.userService.findOne({ telegramId });
+      if (!user)
+        throw new BadRequestException({ message: "Пользователь не найден" });
+      await this.userService.update(user.id, {
+        telegramFlow: TelegramFlowCommandEnum[ctx.message.text],
+        telegramState: TelegramFlowStateEnum.DEFAULT,
+      });
+      this.handleUserReply(telegramId, ctx);
+    }
   }
 
   @On("poll_answer")
   async onPollAnswer(ctx: Context) {
     const { id } = ctx.pollAnswer.user;
-    try {
-      const steps = await this.telegramOnboardingFlowService.getSteps();
-      const user = await this.userService.findOne({ telegramId: id });
-      if (!user)
-        throw new BadRequestException({ message: "Пользователь не найден" });
-      const index = steps.findIndex((el) => el.key === user.telegramState);
-      if (index < 0)
-        throw new BadRequestException({ message: "Индекс шага не найден" });
-      const currentStep = steps[index];
-      const answers = currentStep.poll?.values.filter((el, key) =>
-        ctx.pollAnswer.option_ids.includes(key)
-      );
-      if (answers?.length > 0) {
-        this.handleUserReply(id, answers.join("; "), ctx);
-      }
-    } catch (err) {
-      ctx.api.sendMessage(
-        id,
-        `Произошла ошибка: ${err?.message || "500"}. Попробуйте ещё раз.`
-      );
-    }
+    this.handleUserReply(id, ctx);
   }
 }

@@ -22,9 +22,20 @@ export class UserService {
 
   @Transactional()
   async create(user: Partial<UserEntity>): Promise<UserEntity> {
-    const newUser = await this.userRepository.save(user);
+    const newUser = await this.userRepository.save({
+      ...this.userRepository.create(user),
+      profile: this.userProfileRepository.create(user.profile),
+    });
     return newUser;
   }
+
+  // @Transactional()
+  // async createWithProfile(
+  //   user: Partial<UserEntity>,
+  //   userProfile: Partial<UserProfileEntity>
+  // ): Promise<UserEntity> {
+  //   return await this.user;
+  // }
 
   async findOne(findData: {
     id?: string;
@@ -75,21 +86,16 @@ export class UserService {
       where: { email: data.email },
     });
     if (!user) {
-      const user = await this.userRepository.save(
-        this.userRepository.create({
-          email: data.email,
-        })
-      );
-      await this.userProfileRepository.save(
-        this.userProfileRepository.create({
-          userId: user.id,
+      const user = await this.create({
+        email: data.email,
+        profile: {
           fullname:
             data.given_name || data.nickname + data.family_name
               ? ` ${data.family_name}`
               : "",
           avatar: data.picture,
-        })
-      );
+        },
+      });
     }
     return user;
   }

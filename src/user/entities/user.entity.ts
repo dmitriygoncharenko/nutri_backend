@@ -37,7 +37,8 @@ import {
   ApiPropertyId,
   ApiPropertyOptionalId,
 } from "src/shared/decorators/uuid.decorator";
-import { TelegramFlowKeyEnum } from "src/telegram/enums/telegram-flow-key.enum";
+import { TelegramFlowStateEnum } from "src/telegram/enums/telegram-flow-state.enum";
+import { TelegramFlowEnum } from "src/telegram/enums/telegram-flow.enum";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -58,13 +59,30 @@ export class UserEntity extends AbstractEntity {
   @Column({ type: "text", nullable: true })
   phone?: string;
 
+  // @ManyToMany(() => UserEntity, (user) => user.clients)
+  // @JoinTable({name: 'user_clients'})
+  // clients: UserEntity[];
+
+  // @ManyToMany(() => UserEntity, (user) => user.coaches)
+  // @JoinTable({name: 'user_coaches', joinColumn: 'clientId', })
+  // coaches: UserEntity;
+
   @ManyToMany(() => UserEntity, (user) => user.clients)
-  @JoinTable()
-  clients: UserEntity[];
+  @JoinTable({
+    name: "user_coaches",
+    joinColumn: {
+      name: "clientId",
+      referencedColumnName: "id",
+    },
+    inverseJoinColumn: {
+      name: "coachId",
+      referencedColumnName: "id",
+    },
+  })
+  coaches: UserEntity[];
 
   @ManyToMany(() => UserEntity, (user) => user.coaches)
-  @JoinTable()
-  coaches: UserEntity;
+  clients: UserEntity[];
 
   @ApiPropertyOptionalId()
   @Column({ type: "uuid", nullable: true })
@@ -79,24 +97,37 @@ export class UserEntity extends AbstractEntity {
   telegramUsername?: string;
 
   @ApiProperty({
-    enum: TelegramFlowKeyEnum,
-    enumName: "TelegramFlowKeyEnum",
-    type: () => TelegramFlowKeyEnum,
+    enum: TelegramFlowStateEnum,
+    enumName: "TelegramFlowStateEnum",
+    type: () => TelegramFlowStateEnum,
   })
   @Column({
     type: "enum",
-    enum: TelegramFlowKeyEnum,
-    default: TelegramFlowKeyEnum.START,
+    enum: TelegramFlowStateEnum,
+    default: TelegramFlowStateEnum.DEFAULT,
   })
-  telegramState: TelegramFlowKeyEnum;
+  telegramState: TelegramFlowStateEnum;
 
-  @OneToOne(() => UserProfileEntity, (entity) => entity.userId, {
+  @ApiProperty({
+    enum: TelegramFlowEnum,
+    enumName: "TelegramFlowEnum",
+    type: () => TelegramFlowEnum,
+  })
+  @Column({
+    type: "enum",
+    enum: TelegramFlowEnum,
+    default: null,
+    nullable: true,
+  })
+  telegramFlow: TelegramFlowEnum;
+
+  @OneToOne(() => UserProfileEntity, {
     nullable: true,
     cascade: true,
     onDelete: "CASCADE",
   })
   @JoinColumn({ name: "profileId" })
-  profile: UserProfileEntity;
+  profile: Partial<UserProfileEntity>;
 
   @OneToMany(() => UserWeightEntity, (entity) => entity.user, {
     cascade: true,
@@ -152,7 +183,7 @@ export class UserEntity extends AbstractEntity {
   })
   creator_training_plans: TrainingPlanEntity[];
 
-  @OneToOne(() => UserCoachProfileEntity, (entity) => entity.userId, {
+  @OneToOne(() => UserCoachProfileEntity, {
     cascade: true,
     onDelete: "CASCADE",
   })

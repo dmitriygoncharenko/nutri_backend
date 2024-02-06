@@ -1,11 +1,14 @@
-import { TelegramFlowKeyEnum } from "../enums/telegram-flow-key.enum";
+import { Context } from "grammy";
+import { TelegramFlowStateEnum } from "../enums/telegram-flow-state.enum";
+import { UserEntity } from "src/user/entities/user.entity";
 
 export interface TelegramFlowStepInterface {
-  key: TelegramFlowKeyEnum;
-  message: string;
+  key: TelegramFlowStateEnum;
+  message: (user: UserEntity) => Promise<string>;
   field: string;
-  action: (userId: string, value: any) => void;
+  action: (user: UserEntity, value: any, ctx?: Context) => void;
   buttons?: any[];
+  file?: { url?: string };
   poll?: {
     options: {
       is_anonymous?: boolean;

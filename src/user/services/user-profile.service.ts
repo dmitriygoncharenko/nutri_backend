@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { FindOptionsWhere, Repository } from "typeorm";
 import { UserEntity } from "../entities/user.entity";
 import { Transactional } from "typeorm-transactional";
 import config from "../../config";
@@ -19,25 +19,26 @@ export class UserProfileService {
   ) {}
 
   async create(
-    userId: string,
     profile: Partial<UserProfileEntity>
   ): Promise<UserProfileEntity> {
     return await this.userProfileRepository.save(
-      this.userProfileRepository.create({ userId, ...profile })
+      this.userProfileRepository.create(profile)
     );
   }
 
-  //   async update(
-  //     id: string,
-  //     updatedProfile: Partial<UserProfileEntity>
-  //   ): Promise<UserProfileEntity> {
-  //     await this.userProfileRepository.update(id, updatedProfile);
-  //     const userProfile = await this.userProfileRepository.findOne({
-  //       where: { id },
-  //     });
-  //     return userProfile;
-  //   }
-  update(userId: string, updatedProfile: Partial<UserProfileEntity>) {
-    console.log("user profile updated");
+  async update(
+    userProfileId: string,
+    updatedProfile: Partial<UserProfileEntity>
+  ) {
+    return await this.userProfileRepository.update(
+      userProfileId,
+      updatedProfile
+    );
+  }
+
+  async findOne(
+    where: FindOptionsWhere<UserProfileEntity>
+  ): Promise<UserProfileEntity> {
+    return await this.userProfileRepository.findOne({ where });
   }
 }

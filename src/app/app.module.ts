@@ -17,9 +17,15 @@ import { DataSource } from "typeorm";
 import { AuthModule } from "src/auth/auth.module";
 import { TelegramModule } from "src/telegram/telegram.module";
 import { SendGridModule } from "@anchan828/nest-sendgrid";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
+import { OpenAiModule } from "src/openai/openai.module";
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "public"),
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig],
@@ -52,6 +58,7 @@ import { SendGridModule } from "@anchan828/nest-sendgrid";
     UserModule,
     HmatrixModule,
     TelegramModule,
+    OpenAiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

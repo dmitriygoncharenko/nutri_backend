@@ -1,14 +1,10 @@
 import { AbstractEntity } from "src/shared/entities/abstract.entity";
-import { Column, Entity, OneToOne } from "typeorm";
-import { UserEntity } from "./user.entity";
+import { Column, Entity } from "typeorm";
 
 @Entity("user_coach_profiles")
 export class UserCoachProfileEntity extends AbstractEntity {
   @Column({ type: "text" })
   title: string;
-
-  @Column({ type: "uuid" })
-  userId: string;
 
   // Personal Trainer/Fitness Professional
   // Nutritionist
