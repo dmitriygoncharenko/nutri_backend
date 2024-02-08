@@ -30,6 +30,11 @@ import {
   filterEnumKeysByValue,
 } from "src/shared/utilities/enum.utility";
 import { getUserGoalLabels } from "src/user/enums/user-goal.enum";
+import { TelegramPayFlowService } from "./telegram-pay-flow.service";
+import { SubscriptionService } from "src/billing/services/subscription.service";
+import { SubscriptionTypeEnum } from "src/billing/enums/subscription-type.enum";
+import { TelegramFlowEnum } from "../enums/telegram-flow.enum";
+import { SubscriptionStatusEnum } from "src/billing/enums/subscription-status.enum";
 
 @Injectable()
 export class TelegramStartFlowService {
@@ -39,7 +44,9 @@ export class TelegramStartFlowService {
     private userWeightService: UserWeightService,
     private userHeightService: UserHeightService,
     private userEmailCodeService: UserEmailCodeService,
-    private readonly sendGridService: SendGridService
+    private readonly sendGridService: SendGridService,
+    private readonly telegramPayFlowService: TelegramPayFlowService,
+    private readonly subscriptionService: SubscriptionService
   ) {}
 
   getSteps(): TelegramFlowStepInterface[] {
@@ -231,8 +238,28 @@ export class TelegramStartFlowService {
       },
       {
         key: TelegramFlowStateEnum.DEFAULT,
-        message: async () =>
-          "❤️ Отлично, готовим индивидуальное меню для вас. А Пока предлагаем посмотреть короткий ролик о том, как Nutrinetic помогает людям быть здоровыми.",
+        message: async (user: UserEntity) => {
+          const userHasFreeSubscription =
+            !!(await this.subscriptionService.findOne({
+              userId: user.id,
+              type: SubscriptionTypeEnum.FREE,
+            }));
+          if (userHasFreeSubscription) {
+            await this.userService.update(user.id, {
+              telegramFlow: TelegramFlowEnum.PAY,
+              telegramState: TelegramFlowStateEnum.DEFAULT,
+            });
+            return null;
+          } else {
+            await this.subscriptionService.create({
+              userId: user.id,
+              type: SubscriptionTypeEnum.FREE,
+              status: SubscriptionStatusEnum.NOT_PAID,
+              generations: 7,
+            });
+            return "Открыли для тебя проблный период на одну неделю. Уже готовим индивидуальное меню на сегодня. А пока предлагаем посмотреть короткий ролик о том, как Nutrinetic помогает людям быть здоровыми.";
+          }
+        },
         field: null,
         action: null,
         file: {

@@ -8,11 +8,14 @@ import { TelegramFlowService } from "./flows/telegram-flow.service";
 import { TelegramStartFlowService } from "./flows/telegram-start-flow.service";
 import { TelegramRecipeFlowService } from "./flows/telegram-recipe-flow.service";
 import { TelegramWeightFlowService } from "./flows/telegram-weight-flow.service";
+import { TelegramPayFlowService } from "./flows/telegram-pay-flow.service";
+import { BillingModule } from "src/billing/billing.module";
 
 @Module({
   imports: [
     // MODULES
     UserModule,
+    BillingModule,
     // GRAMMY
     NestjsGrammyModule.forRootAsync({
       imports: [ConfigModule],
@@ -32,6 +35,7 @@ import { TelegramWeightFlowService } from "./flows/telegram-weight-flow.service"
     TelegramStartFlowService,
     TelegramFlowService,
     TelegramWeightFlowService,
+    TelegramPayFlowService,
   ],
   exports: [
     TelegramUpdate,
@@ -39,6 +43,7 @@ import { TelegramWeightFlowService } from "./flows/telegram-weight-flow.service"
     TelegramFlowService,
     TelegramRecipeFlowService,
     TelegramWeightFlowService,
+    TelegramPayFlowService,
   ],
 })
 export class TelegramModule {}

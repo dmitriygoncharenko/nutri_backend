@@ -39,6 +39,7 @@ import {
 } from "src/shared/decorators/uuid.decorator";
 import { TelegramFlowStateEnum } from "src/telegram/enums/telegram-flow-state.enum";
 import { TelegramFlowEnum } from "src/telegram/enums/telegram-flow.enum";
+import { SubscriptionEntity } from "src/billing/entities/subscription.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -194,4 +195,10 @@ export class UserEntity extends AbstractEntity {
     onDelete: "CASCADE",
   })
   creatorAnalysis: UserHealthProblemEntity[];
+
+  @OneToMany(() => SubscriptionEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  subscriptions: SubscriptionEntity[];
 }

@@ -24,4 +24,8 @@ export enum TelegramFlowStateEnum {
 
   WEIGHT_INIT = "weight_init",
   WEIGHT_BMI = "weight_bmi",
+
+  PAY_INIT = "pay_init",
+
+  FREE_INIT = "free_init",
 }

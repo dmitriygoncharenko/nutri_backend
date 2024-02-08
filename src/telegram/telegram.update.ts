@@ -18,6 +18,8 @@ import { TelegramFlowService } from "./flows/telegram-flow.service";
 import { TelegramFlowStepInterface } from "./interfaces/telegram-flow-step.interface";
 import { TelegramFlowEnum } from "./enums/telegram-flow.enum";
 import { UserEntity } from "src/user/entities/user.entity";
+import { SubscriptionService } from "src/billing/services/subscription.service";
+import { SubscriptionStatusEnum } from "src/billing/enums/subscription-status.enum";
 
 @Update()
 export class TelegramUpdate {
@@ -26,7 +28,8 @@ export class TelegramUpdate {
     private readonly bot: Bot<Context>,
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
-    private readonly telegramFlowService: TelegramFlowService
+    private readonly telegramFlowService: TelegramFlowService,
+    private readonly subscriptionService: SubscriptionService
   ) {}
 
   async sendMessage(
@@ -37,11 +40,10 @@ export class TelegramUpdate {
   ) {
     if (!step) throw new BadRequestException({ message: "No more steps" });
     if (!step.message) return;
-    let message = null;
-    if (typeof step.message === "string") {
-      message = step.message;
-    } else {
-      message = await step.message(user);
+    const message = await step.message(user);
+    if (!message) {
+      // I setup another flow if message undefined or null
+      this.handleUserReply(telegramId, ctx);
     }
     if (step?.buttons?.length) {
       await ctx.api.sendMessage(telegramId, message, {
@@ -107,9 +109,9 @@ export class TelegramUpdate {
         }
 
         const nextStep = steps[index + 1];
-        this.sendMessage(telegramId, user, nextStep, ctx);
+        nextStep && this.sendMessage(telegramId, user, nextStep, ctx);
         // If next step is the last - set user flow to default state
-        if (index + 2 === steps.length) {
+        if (index + 1 === steps.length) {
           await this.userService.update(user.id, {
             telegramFlow: TelegramFlowEnum.DEFAULT,
             telegramState: TelegramFlowStateEnum.DEFAULT,
@@ -164,6 +166,21 @@ export class TelegramUpdate {
 
   @On("message")
   async onMessage(ctx: Context) {
+    // On payment success
+    if (ctx.update.message?.successful_payment) {
+      const {
+        invoice_payload,
+        telegram_payment_charge_id,
+        provider_payment_charge_id,
+      } = ctx.update.message?.successful_payment;
+      await this.subscriptionService.update(invoice_payload, {
+        status: SubscriptionStatusEnum.PAID,
+        telegram_payment_charge_id,
+        provider_payment_charge_id,
+      });
+
+      return;
+    }
     const { id: telegramId } = ctx.update.message.from;
     const commands = Object.keys(TelegramFlowCommandEnum);
     if (!commands.includes(ctx.message.text)) {
@@ -184,5 +201,21 @@ export class TelegramUpdate {
   async onPollAnswer(ctx: Context) {
     const { id } = ctx.pollAnswer.user;
     this.handleUserReply(id, ctx);
+  }
+
+  @On("pre_checkout_query")
+  async onPaymentPreCheckoutQuery(ctx: Context) {
+    try {
+      // Perform any necessary validation of the pre_checkout_query here
+      // For example, verify the total amount and currency
+      await ctx.answerPreCheckoutQuery(true);
+      console.log("Pre-checkout query successful.");
+    } catch (error) {
+      console.error("Failed to process pre-checkout query:", error);
+      await ctx.answerPreCheckoutQuery(
+        false,
+        "An error occurred while processing your payment. Please try again."
+      );
+    }
   }
 }

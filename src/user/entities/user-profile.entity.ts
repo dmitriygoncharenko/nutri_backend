@@ -12,6 +12,7 @@ import { UserFoodCountEnum } from "../enums/user-food-count.enum";
 import { UserFoodTypeEnum } from "../enums/user-food-type.enum";
 import { UserActivityLevelEnum } from "../enums/user-activity-level.enum";
 import { UserGoalEnum } from "../enums/user-goal.enum";
+import { PaymentMethodEnum } from "src/billing/enums/payment-method.enum";
 
 const nullable: boolean = true;
 
@@ -129,4 +130,18 @@ export class UserProfileEntity extends AbstractEntity {
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable })
   initial_complaints: string;
+
+  @ApiProperty({
+    type: () => PaymentMethodEnum,
+    enum: PaymentMethodEnum,
+    enumName: "PaymentMethodEnum",
+    example: PaymentMethodEnum.INTERNATIONAL_CARD,
+  })
+  @Column({
+    type: "enum",
+    enum: PaymentMethodEnum,
+    enumName: "PaymentMethodEnum",
+    default: PaymentMethodEnum.RUSSIAN_CARD,
+  })
+  payment_method: PaymentMethodEnum;
 }
