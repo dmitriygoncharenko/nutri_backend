@@ -1,16 +1,21 @@
 import { AbstractEntity } from "src/shared/entities/abstract.entity";
-import { Column, Entity } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { MealTypeEnum } from "../enums/meal-type.enum";
 import { ApiPropertyId } from "src/shared/decorators/uuid.decorator";
 import { ApiProperty } from "@nestjs/swagger";
 import {
   ApiPropertyInt,
+  ApiPropertyOptionalInt,
+  ApiPropertyOptionalString,
   ApiPropertyString,
 } from "src/shared/decorators/api.decorator";
+import { SubscriptionEntity } from "src/subscription/entities/subscription.entity";
+import { MealStatusEnum } from "../enums/meal-status.enum";
+import { ApiPropertyOptionalDate } from "src/shared/decorators/date.decorator";
 
 interface IngredientInterface {
   name: string;
-  value: number;
+  quantity: number;
   metric: string;
 }
 
@@ -21,59 +26,92 @@ export class MealEntity extends AbstractEntity {
   userId: string;
 
   @ApiProperty({
+    type: () => MealStatusEnum,
+    enum: MealStatusEnum,
+    enumName: "MealStatusEnum",
+    example: MealStatusEnum.CREATED,
+  })
+  @Column({
+    type: "enum",
+    enum: MealStatusEnum,
+    enumName: "MealStatusEnum",
+    default: MealStatusEnum.CREATED,
+  })
+  status: MealStatusEnum;
+
+  @ApiProperty({
     type: () => MealTypeEnum,
     enum: MealTypeEnum,
-    enumName: "meal_type_enum",
+    enumName: "MealTypeEnum",
     example: MealTypeEnum.BREAKFAST,
   })
-  @Column({ type: "enum", enum: MealTypeEnum, enumName: "meal_type_enum" })
+  @Column({ type: "enum", enum: MealTypeEnum, enumName: "MealTypeEnum" })
   type: MealTypeEnum;
 
-  @ApiPropertyString()
-  @Column({ type: "text" })
-  query: string;
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  query?: string;
 
-  @ApiPropertyInt()
-  @Column({ type: "int" })
-  cookTime: number;
-
-  @ApiPropertyString({ isArray: true })
-  @Column({ type: "jsonb", array: true, default: [] })
-  recipeSteps: string[];
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable: true })
+  cookTime?: number;
 
   @ApiPropertyString({ isArray: true })
-  @Column({ type: "jsonb", array: true, default: [] })
-  microElements: string[];
+  @Column({ type: "jsonb", default: [] })
+  steps: string[];
 
-  @ApiPropertyInt()
-  @Column({ type: "int" })
-  fats: number;
+  @ApiPropertyString({ isArray: true })
+  @Column({ type: "jsonb", default: [] })
+  elements: string[];
 
-  @ApiPropertyInt()
-  @Column({ type: "int" })
-  carbo: number;
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable: true })
+  fats?: number;
 
-  @ApiPropertyInt()
-  @Column({ type: "int" })
-  protein: number;
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable: true })
+  carbo?: number;
 
-  @ApiPropertyInt()
-  @Column({ type: "int" })
-  calories: number;
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable: true })
+  protein?: number;
 
-  @ApiPropertyString()
-  @Column({ type: "text" })
-  title: string;
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable: true })
+  calories?: number;
 
-  @ApiPropertyString()
-  @Column({ type: "text" })
-  description: string;
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  title?: string;
+
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  description?: string;
+
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  intro?: string;
 
   @ApiProperty({ isArray: true })
-  @Column({ type: "jsonb", array: true, default: [] })
+  @Column({ type: "jsonb", default: [] })
   ingredients: IngredientInterface[];
 
-  @ApiPropertyString()
-  @Column({ type: "text" })
-  image: string;
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  image?: string;
+
+  @ApiPropertyOptionalDate()
+  @Column({ type: "timestamptz", nullable: true })
+  date?: Date;
+
+  @ApiPropertyId()
+  @Column({ type: "uuid" })
+  subscriptionId: string;
+
+  @ApiProperty({
+    type: () => SubscriptionEntity,
+  })
+  @ManyToOne(() => SubscriptionEntity, (entity) => entity.meals)
+  @JoinColumn({ name: "subscriptionId" })
+  subscription: SubscriptionEntity;
 }

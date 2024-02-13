@@ -1,9 +1,9 @@
 export enum UserActivityLevelEnum {
-  SEDENTARY = 1,
-  LIGHTLY_ACTIVE = 1.375,
-  MODERATELY_ACTIVE = 1.55,
-  VERY_ACTIVE = 1.725,
-  EXTRA_ACTIVE = 1.9,
+  SEDENTARY = 1000,
+  LIGHTLY_ACTIVE = 1375,
+  MODERATELY_ACTIVE = 1550,
+  VERY_ACTIVE = 1725,
+  EXTRA_ACTIVE = 1900,
 }
 
 export const getUserActivityLevelLabels = (): Record<

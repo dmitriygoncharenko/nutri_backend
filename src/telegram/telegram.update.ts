@@ -18,8 +18,8 @@ import { TelegramFlowService } from "./flows/telegram-flow.service";
 import { TelegramFlowStepInterface } from "./interfaces/telegram-flow-step.interface";
 import { TelegramFlowEnum } from "./enums/telegram-flow.enum";
 import { UserEntity } from "src/user/entities/user.entity";
-import { SubscriptionService } from "src/billing/services/subscription.service";
-import { SubscriptionStatusEnum } from "src/billing/enums/subscription-status.enum";
+import { SubscriptionService } from "src/subscription/services/subscription.service";
+import { SubscriptionStatusEnum } from "src/subscription/enums/subscription-status.enum";
 
 @Update()
 export class TelegramUpdate {
@@ -31,6 +31,20 @@ export class TelegramUpdate {
     private readonly telegramFlowService: TelegramFlowService,
     private readonly subscriptionService: SubscriptionService
   ) {}
+
+  async skipStepsAndFindNext(
+    index: number,
+    steps: TelegramFlowStepInterface[],
+    user: UserEntity
+  ) {
+    if (!steps[index])
+      throw new BadRequestException({ message: "Шаг для проверки не найден" });
+    if (steps[index].skipStep && (await steps[index].skipStep(user))) {
+      return await this.skipStepsAndFindNext(index + 1, steps, user);
+    } else {
+      return index;
+    }
+  }
 
   async sendMessage(
     telegramId: number,
@@ -74,55 +88,64 @@ export class TelegramUpdate {
     value?: string | string[]
   ) {
     try {
-      const user = await this.userService.findOne({ telegramId });
+      let user = await this.userService.findOne({ telegramId });
       if (!user) throw new BadRequestException({ message: "User not found" });
       if (user.telegramFlow === TelegramFlowEnum.DEFAULT) return;
 
       const steps = this.telegramFlowService.getFlowSteps(user.telegramFlow);
+      let currentStep = null;
+      let nextStep = null;
+      let index = 0;
       // Check if user just have started some flow
       if (user.telegramState === TelegramFlowStateEnum.DEFAULT) {
-        await this.sendMessage(telegramId, user, steps[0], ctx);
-        await this.userService.update(user.id, { telegramState: steps[0].key });
+        index = await this.skipStepsAndFindNext(index, steps, user);
+        currentStep = steps[index];
+        user = await this.userService.update(user.id, {
+          telegramState: currentStep.key,
+        });
+        await this.sendMessage(telegramId, user, currentStep, ctx);
         return;
       }
 
       // If not, then let's find current step index
-      const index = steps.findIndex((el) => el.key === user.telegramState);
-      if (index >= 0) {
-        const currentStep = steps[index];
+      index = steps.findIndex((el) => el.key === user.telegramState);
 
-        // Collect poll answers
-        if (currentStep.poll) {
-          value = currentStep.poll?.values.filter((el, key) =>
-            ctx.pollAnswer.option_ids.includes(key)
-          );
-        }
-
-        if (currentStep.action) {
-          await currentStep.action(
-            user,
-            {
-              [currentStep.field]: value,
-            },
-            ctx
-          );
-        }
-
-        const nextStep = steps[index + 1];
-        nextStep && this.sendMessage(telegramId, user, nextStep, ctx);
-        // If next step is the last - set user flow to default state
-        if (index + 1 === steps.length) {
-          await this.userService.update(user.id, {
-            telegramFlow: TelegramFlowEnum.DEFAULT,
-            telegramState: TelegramFlowStateEnum.DEFAULT,
-          });
-        } else {
-          await this.userService.update(user.id, {
-            telegramState: nextStep.key,
-          });
-        }
-      } else {
+      if (index < 0)
         throw new BadRequestException({ message: "Шаг не найден" });
+
+      currentStep = steps[index];
+
+      // Collect poll answers
+      if (currentStep.poll) {
+        value = currentStep.poll?.values.filter((el, key) =>
+          ctx.pollAnswer.option_ids.includes(key)
+        );
+      }
+
+      if (currentStep.action) {
+        await currentStep.action(
+          user,
+          {
+            [currentStep.field]: value,
+          },
+          ctx
+        );
+      }
+      if (index + 1 === steps.length) {
+        // If next step is the last - set user flow to default state
+        await this.userService.update(user.id, {
+          telegramFlow: TelegramFlowEnum.DEFAULT,
+          telegramState: TelegramFlowStateEnum.DEFAULT,
+        });
+      } else {
+        index = index + 1;
+        index = await this.skipStepsAndFindNext(index, steps, user);
+        console.log("🚀 ~ TelegramUpdate ~ index:", index);
+        nextStep = steps[index];
+        await this.userService.update(user.id, {
+          telegramState: nextStep.key,
+        });
+        this.sendMessage(telegramId, user, nextStep, ctx);
       }
     } catch (err) {
       ctx.api.sendMessage(

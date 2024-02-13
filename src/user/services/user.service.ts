@@ -1,6 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import {
+  FindOneOptions,
+  FindOptionsRelations,
+  FindOptionsWhere,
+  Repository,
+} from "typeorm";
 import { UserEntity } from "../entities/user.entity";
 import { Transactional } from "typeorm-transactional";
 import config from "../../config";
@@ -37,13 +42,13 @@ export class UserService {
   //   return await this.user;
   // }
 
-  async findOne(findData: {
-    id?: string;
-    email?: string;
-    telegramId?: number;
-  }): Promise<UserEntity> {
+  async findOne(
+    where: FindOptionsWhere<UserEntity>,
+    relations?: string[]
+  ): Promise<UserEntity> {
     return await this.userRepository.findOne({
-      where: { ...findData },
+      where,
+      relations,
     });
   }
 

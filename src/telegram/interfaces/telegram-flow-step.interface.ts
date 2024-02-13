@@ -7,6 +7,7 @@ export interface TelegramFlowStepInterface {
   message: (user: UserEntity) => Promise<string>;
   field: string;
   action: (user: UserEntity, value: any, ctx?: Context) => void;
+  skipStep?: (user: UserEntity, ctx?: Context) => Promise<boolean>;
   buttons?: any[];
   file?: { url?: string };
   poll?: {

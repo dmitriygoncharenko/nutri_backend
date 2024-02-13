@@ -3,12 +3,12 @@ import { TelegramFlowStepInterface } from "../interfaces/telegram-flow-step.inte
 import { TelegramFlowStateEnum } from "../enums/telegram-flow-state.enum";
 import { UserEntity } from "src/user/entities/user.entity";
 import { Context } from "grammy";
-import { SubscriptionService } from "src/billing/services/subscription.service";
-import { SubscriptionTypeEnum } from "src/billing/enums/subscription-type.enum";
-import { PaymentMethodEnum } from "src/billing/enums/payment-method.enum";
+import { SubscriptionService } from "src/subscription/services/subscription.service";
+import { SubscriptionTypeEnum } from "src/subscription/enums/subscription-type.enum";
+import { PaymentMethodEnum } from "src/subscription/enums/payment-method.enum";
 import { UserService } from "src/user/services/user.service";
 import { UserProfileService } from "src/user/services/user-profile.service";
-import { SubscriptionStatusEnum } from "src/billing/enums/subscription-status.enum";
+import { SubscriptionStatusEnum } from "src/subscription/enums/subscription-status.enum";
 import { TelegramFlowEnum } from "../enums/telegram-flow.enum";
 
 @Injectable()
@@ -38,7 +38,7 @@ export class TelegramPayFlowService {
 
           const subscription = await this.subscriptionService.create({
             userId: user.id,
-            type: SubscriptionTypeEnum.MENU,
+            type: SubscriptionTypeEnum.PAID,
             status: SubscriptionStatusEnum.CREATED,
             generations: 28,
           });

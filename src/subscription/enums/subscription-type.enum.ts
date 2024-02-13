@@ -1,5 +1,4 @@
 export enum SubscriptionTypeEnum {
-  MENU = "menu",
-  SCAN = "scan",
+  PAID = "paid",
   FREE = "free",
 }

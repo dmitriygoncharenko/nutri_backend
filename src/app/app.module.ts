@@ -20,7 +20,7 @@ import { SendGridModule } from "@anchan828/nest-sendgrid";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
 import { OpenAiModule } from "src/openai/openai.module";
-import { BillingModule } from "src/billing/billing.module";
+import { SubscriptionModule } from "src/subscription/subscription.module";
 import { MealModule } from "src/meal/meal.module";
 
 @Module({
@@ -61,7 +61,7 @@ import { MealModule } from "src/meal/meal.module";
     HmatrixModule,
     TelegramModule,
     OpenAiModule,
-    BillingModule,
+    SubscriptionModule,
     MealModule,
   ],
   controllers: [AppController],

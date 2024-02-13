@@ -5,7 +5,7 @@ import { DataSource, DataSourceOptions } from "typeorm";
 export const databaseConfig = (): DataSourceOptions => ({
   name: "default",
   type: "postgres",
-  logging: true,
+  logging: false,
   synchronize: false,
   ssl: false,
   dropSchema: false,

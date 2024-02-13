@@ -16,6 +16,7 @@ export enum TelegramFlowStateEnum {
   START_MODULES = "start_modules",
   START_FOOD_HABITS = "start_food_habits",
   START_ACTIVITY_LEVEL = "start_activity_level",
+  START_LOCATION = "start_location",
 
   RECIPE_INIT = "recipe_init",
   RECIPE_DIET = "recipe_diet",

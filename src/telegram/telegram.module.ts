@@ -9,13 +9,15 @@ import { TelegramStartFlowService } from "./flows/telegram-start-flow.service";
 import { TelegramRecipeFlowService } from "./flows/telegram-recipe-flow.service";
 import { TelegramWeightFlowService } from "./flows/telegram-weight-flow.service";
 import { TelegramPayFlowService } from "./flows/telegram-pay-flow.service";
-import { BillingModule } from "src/billing/billing.module";
+import { SubscriptionModule } from "src/subscription/subscription.module";
+import { OpenAiModule } from "src/openai/openai.module";
 
 @Module({
   imports: [
     // MODULES
     UserModule,
-    BillingModule,
+    SubscriptionModule,
+    OpenAiModule,
     // GRAMMY
     NestjsGrammyModule.forRootAsync({
       imports: [ConfigModule],

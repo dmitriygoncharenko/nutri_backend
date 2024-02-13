@@ -9,9 +9,9 @@ import {
   ApiPropertyInt,
   ApiPropertyOptionalString,
 } from "src/shared/decorators/api.decorator";
-import { MealGroupEntity } from "src/meal/entities/meal-group.entity";
 import { isArray } from "class-validator";
 import { SubscriptionStatusEnum } from "../enums/subscription-status.enum";
+import { MealEntity } from "src/meal/entities/meal.entity";
 
 @Entity("subscriptions")
 export class SubscriptionEntity extends AbstractEntity {
@@ -29,14 +29,14 @@ export class SubscriptionEntity extends AbstractEntity {
   @ApiProperty({
     enum: SubscriptionTypeEnum,
     enumName: "SubscriptionTypeEnum",
-    example: SubscriptionTypeEnum.MENU,
+    example: SubscriptionTypeEnum.PAID,
     type: () => SubscriptionTypeEnum,
   })
   @Column({
     type: "enum",
     enum: SubscriptionTypeEnum,
     enumName: "SubscriptionTypeEnum",
-    default: SubscriptionTypeEnum.MENU,
+    default: SubscriptionTypeEnum.PAID,
   })
   type: SubscriptionTypeEnum;
 
@@ -66,10 +66,10 @@ export class SubscriptionEntity extends AbstractEntity {
   @Column({ type: "int" })
   generations: number;
 
-  @ApiProperty({ type: () => MealGroupEntity, isArray: true })
-  @OneToMany(() => MealGroupEntity, (entity) => entity.subscription, {
+  @ApiProperty({ type: () => MealEntity, isArray: true })
+  @OneToMany(() => MealEntity, (entity) => entity.subscription, {
     cascade: true,
     onDelete: "CASCADE",
   })
-  mealGroups: MealGroupEntity[];
+  meals: MealEntity[];
 }

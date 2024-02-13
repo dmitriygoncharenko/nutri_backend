@@ -6,12 +6,12 @@ import { OpenAIService } from "../services/openai.service";
 @Controller("openai")
 export class OpenAiController {
   constructor(private readonly openaiService: OpenAIService) {}
-  @Get()
+  @Get("ping")
   @ApiOperation({
-    summary: "test ai",
+    summary: "test open ai",
   })
   @ApiResponse({ status: 200, description: "Success" })
   async testAi(): Promise<string> {
-    return await this.openaiService.generateResponse("hello");
+    return await this.openaiService.test();
   }
 }

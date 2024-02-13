@@ -13,14 +13,8 @@ import { UserEmailCodeService } from "src/user/services/user-code.service";
 import { validateEmail } from "src/shared/utilities/email.utility";
 import { validateDate } from "src/shared/utilities/date.utility";
 import { join } from "path";
-import {
-  UserFoodCountEnum,
-  getUserFoodCountLabels,
-} from "src/user/enums/user-food-count.enum";
-import {
-  UserFoodTypeEnum,
-  getUserFoodTypeLabels,
-} from "src/user/enums/user-food-type.enum";
+
+import { DietEnum, getDietLabels } from "src/user/enums/diet.enum";
 import { Context, InlineKeyboard, InputFile } from "grammy";
 import { createReadStream } from "fs";
 import { stringToNumber } from "src/shared/utilities/number.utility";
@@ -31,10 +25,14 @@ import {
 } from "src/shared/utilities/enum.utility";
 import { getUserGoalLabels } from "src/user/enums/user-goal.enum";
 import { TelegramPayFlowService } from "./telegram-pay-flow.service";
-import { SubscriptionService } from "src/billing/services/subscription.service";
-import { SubscriptionTypeEnum } from "src/billing/enums/subscription-type.enum";
+import { SubscriptionService } from "src/subscription/services/subscription.service";
+import { SubscriptionTypeEnum } from "src/subscription/enums/subscription-type.enum";
 import { TelegramFlowEnum } from "../enums/telegram-flow.enum";
-import { SubscriptionStatusEnum } from "src/billing/enums/subscription-status.enum";
+import { SubscriptionStatusEnum } from "src/subscription/enums/subscription-status.enum";
+import { getMealTypeLabels } from "src/meal/enums/meal-type.enum";
+import { OpenAIService } from "src/openai/services/openai.service";
+import { calculateMetabolismPrompt } from "src/openai/prompts/metabolism.prompt";
+import { getRegionLabels } from "src/user/enums/user-region.enum";
 
 @Injectable()
 export class TelegramStartFlowService {
@@ -46,7 +44,8 @@ export class TelegramStartFlowService {
     private userEmailCodeService: UserEmailCodeService,
     private readonly sendGridService: SendGridService,
     private readonly telegramPayFlowService: TelegramPayFlowService,
-    private readonly subscriptionService: SubscriptionService
+    private readonly subscriptionService: SubscriptionService,
+    private readonly openAiService: OpenAIService
   ) {}
 
   getSteps(): TelegramFlowStepInterface[] {
@@ -88,7 +87,7 @@ export class TelegramStartFlowService {
         field: "weight",
         action: async (user: UserEntity, value: { weight: string }) => {
           const weight = stringToNumber(value.weight, 3);
-          await this.userWeightService.create(user.id, { weight });
+          await this.userProfileService.update(user.profileId, { weight });
         },
       },
       {
@@ -97,22 +96,21 @@ export class TelegramStartFlowService {
         field: "height",
         action: async (user: UserEntity, value: { height: string }) => {
           const height = stringToNumber(value.height, 3);
-          await this.userHeightService.create(user.id, { height });
+          await this.userProfileService.update(user.profileId, { height });
         },
       },
-
       {
         key: TelegramFlowStateEnum.START_FOOD_TYPE,
-        message: async () => "Выберите тип вашего питания:",
-        field: "food_type",
-        action: async (user: UserEntity, value: { diet: string }) => {
+        message: async () => "Выбери тип питания:",
+        field: "diet",
+        action: async (user: UserEntity, value: { diet: string[] }) => {
           const { diet } = value;
           await this.userProfileService.update(user.profileId, {
-            food_type: findEnumKeyByValue(getUserFoodTypeLabels(), diet),
+            diet: findEnumKeyByValue(getDietLabels(), diet[0]),
           });
         },
         poll: {
-          values: Object.values(getUserFoodTypeLabels()),
+          values: Object.values(getDietLabels()),
           options: {
             type: "regular",
             allows_multiple_answers: false,
@@ -122,23 +120,20 @@ export class TelegramStartFlowService {
       {
         key: TelegramFlowStateEnum.START_FOOD_COUNT,
         message: async () => "Сколько раз в день ты хочешь питаться?",
-        field: "food_count",
+        field: "mealTypes",
         action: async (
           user: UserEntity,
-          value: { food_count: string[] },
+          value: { mealTypes: string[] },
           ctx: Context
         ) => {
-          const { food_count } = value;
+          const { mealTypes } = value;
 
           await this.userProfileService.update(user.profileId, {
-            food_count: filterEnumKeysByValue(
-              getUserFoodCountLabels(),
-              food_count
-            ),
+            mealTypes: filterEnumKeysByValue(getMealTypeLabels(), mealTypes),
           });
         },
         poll: {
-          values: Object.values(getUserFoodCountLabels()),
+          values: Object.values(getMealTypeLabels()),
           options: {
             type: "regular",
             allows_multiple_answers: true,
@@ -159,18 +154,40 @@ export class TelegramStartFlowService {
         },
       },
       {
+        key: TelegramFlowStateEnum.START_LOCATION,
+        message: async (user: UserEntity) => {
+          return "Выбери место, где проживаешь, чтобы мы адаптировали ингредиенты под данную локацию:";
+        },
+        field: "location",
+        action: async (user: UserEntity, value: { location: string[] }) => {
+          const { location } = value;
+          await this.userProfileService.update(user.profileId, {
+            location: findEnumKeyByValue(getRegionLabels(), location[0]),
+          });
+        },
+        poll: {
+          values: Object.values(getRegionLabels()),
+          options: {
+            allows_multiple_answers: false,
+            type: "regular",
+          },
+        },
+      },
+      {
         key: TelegramFlowStateEnum.START_ACTIVITY_LEVEL,
         message: async (user: UserEntity) => {
           return "Укажи свой уровень активности:";
         },
         field: "activity_level",
-        action: async (user: UserEntity, value: { activity_level: string }) => {
+        action: async (
+          user: UserEntity,
+          value: { activity_level: string[] }
+        ) => {
           const { activity_level } = value;
-
           await this.userProfileService.update(user.profileId, {
             activity_level: findEnumKeyByValue(
               getUserActivityLevelLabels(),
-              activity_level
+              activity_level[0]
             ),
           });
         },
@@ -193,6 +210,15 @@ export class TelegramStartFlowService {
           await this.userProfileService.update(user.profileId, {
             goal: filterEnumKeysByValue(getUserGoalLabels(), goal),
           });
+          const userProfile = await this.userProfileService.findOne({
+            id: user.profileId,
+          });
+          const { metabolism } = await this.openAiService.chatGPT(
+            calculateMetabolismPrompt(userProfile)
+          );
+          await this.userProfileService.update(userProfile.id, {
+            metabolism: parseInt(String(metabolism)),
+          });
         },
         poll: {
           values: Object.values(getUserGoalLabels()),
@@ -204,6 +230,9 @@ export class TelegramStartFlowService {
         message: async () =>
           "Последний шаг. Укажи Email адрес, чтобы мы могли создать для тебя аккаунт в системе Nutrinetic.",
         field: "email",
+        skipStep: async (user: UserEntity) => {
+          return user.email_verified;
+        },
         action: async (user: UserEntity, value: { email: string }) => {
           const { email } = value;
           const validEmail = validateEmail(email);
@@ -222,6 +251,9 @@ export class TelegramStartFlowService {
         message: async () =>
           "Введите код, который мы отправили на ваш Email для верификации",
         field: "code",
+        skipStep: async (user: UserEntity) => {
+          return user.email_verified;
+        },
         action: async (user: UserEntity, value: { code: string }) => {
           const { code } = value;
           const userCodeExists = await this.userEmailCodeService.findOne({
@@ -254,10 +286,10 @@ export class TelegramStartFlowService {
             await this.subscriptionService.create({
               userId: user.id,
               type: SubscriptionTypeEnum.FREE,
-              status: SubscriptionStatusEnum.NOT_PAID,
+              status: SubscriptionStatusEnum.PAID,
               generations: 7,
             });
-            return "Открыли для тебя проблный период на одну неделю. Уже готовим индивидуальное меню на сегодня. А пока предлагаем посмотреть короткий ролик о том, как Nutrinetic помогает людям быть здоровыми.";
+            return "Открыли для тебя пробный период на одну неделю. Уже готовим индивидуальное меню на сегодня. А пока предлагаем посмотреть короткий ролик о том, как Nutrinetic помогает людям быть здоровыми.";
           }
         },
         field: null,

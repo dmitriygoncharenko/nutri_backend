@@ -4,7 +4,9 @@ export function findEnumKeyByValue<
   V extends T[U]
 >(obj: T, value: V): U | undefined {
   const entries = Object.entries(obj) as [U, V][];
+  console.log("🚀 ~ entries:", entries);
   const foundEntry = entries.find(([key, val]) => val === value);
+  console.log("🚀 ~ foundEntry:", foundEntry);
   return foundEntry ? foundEntry[0] : undefined;
 }
 

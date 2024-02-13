@@ -8,11 +8,12 @@ import {
 } from "src/shared/decorators/api.decorator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { BadRequestException } from "@nestjs/common";
-import { UserFoodCountEnum } from "../enums/user-food-count.enum";
-import { UserFoodTypeEnum } from "../enums/user-food-type.enum";
+import { DietEnum } from "../enums/diet.enum";
 import { UserActivityLevelEnum } from "../enums/user-activity-level.enum";
 import { UserGoalEnum } from "../enums/user-goal.enum";
-import { PaymentMethodEnum } from "src/billing/enums/payment-method.enum";
+import { PaymentMethodEnum } from "src/subscription/enums/payment-method.enum";
+import { MealTypeEnum } from "src/meal/enums/meal-type.enum";
+import { UserRegionEnum } from "../enums/user-region.enum";
 
 const nullable: boolean = true;
 
@@ -51,7 +52,15 @@ export class UserProfileEntity extends AbstractEntity {
 
   @ApiPropertyOptionalInt()
   @Column({ type: "int", nullable })
-  basal_metabolism?: number;
+  weight?: number;
+
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable })
+  height?: number;
+
+  @ApiPropertyOptionalInt()
+  @Column({ type: "int", nullable })
+  metabolism?: number;
 
   @ApiProperty({
     enum: UserGoalEnum,
@@ -62,6 +71,20 @@ export class UserProfileEntity extends AbstractEntity {
   })
   @Column({ type: "enum", array: true, enum: UserGoalEnum, default: [] })
   goal?: UserGoalEnum[];
+
+  @ApiPropertyOptional({
+    type: () => UserRegionEnum,
+    enum: UserRegionEnum,
+    enumName: "UserRegionEnum",
+    example: UserRegionEnum.EastAndSoutheastAsia,
+  })
+  @Column({
+    type: "enum",
+    enum: UserRegionEnum,
+    enumName: "UserRegionEnum",
+    nullable: true,
+  })
+  location?: UserRegionEnum;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable })
@@ -78,24 +101,30 @@ export class UserProfileEntity extends AbstractEntity {
   activity_level?: UserActivityLevelEnum;
 
   @ApiProperty({
-    enum: UserFoodCountEnum,
-    enumName: "UserFoodCountEnum",
-    example: [UserFoodCountEnum.BREAKFAST],
+    enum: MealTypeEnum,
+    enumName: "ProfileMealTypeEnum",
+    example: [MealTypeEnum.BREAKFAST],
     isArray: true,
-    type: () => UserFoodCountEnum,
+    type: () => MealTypeEnum,
   })
-  @Column({ type: "enum", array: true, enum: UserFoodCountEnum, default: [] })
-  food_count?: UserFoodCountEnum[];
+  @Column({
+    type: "enum",
+    array: true,
+    enum: MealTypeEnum,
+    enumName: "ProfileMealTypeEnum",
+    default: [],
+  })
+  mealTypes?: MealTypeEnum[];
 
   @ApiProperty({
-    enum: UserFoodTypeEnum,
-    enumName: "UserFoodTypeEnum",
-    example: UserFoodTypeEnum.KETO,
+    enum: DietEnum,
+    enumName: "DietEnum",
+    example: DietEnum.KETO,
     nullable: true,
-    type: () => UserFoodTypeEnum,
+    type: () => DietEnum,
   })
-  @Column({ type: "enum", enum: UserFoodTypeEnum, nullable })
-  food_type?: UserFoodTypeEnum;
+  @Column({ type: "enum", enum: DietEnum, nullable })
+  diet?: DietEnum;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable })
