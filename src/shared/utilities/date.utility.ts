@@ -52,3 +52,28 @@ export const getDatesForTheRestOfWeek = (startDay: Date): Date[] => {
 
   return datesArray;
 };
+
+export const calculateAge = (dob: string): number => {
+  // Parse the date of birth string into parts
+  const parts = dob.split(".");
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript Date
+  const year = parseInt(parts[2], 10);
+
+  // Create a date object for the date of birth
+  const dobDate = new Date(year, month, day);
+
+  // Get the current date
+  const today = new Date();
+
+  // Calculate the age
+  let age = today.getFullYear() - dobDate.getFullYear();
+  const m = today.getMonth() - dobDate.getMonth();
+
+  // If the current month is before the birth month, or it's the birth month but today's date is before the birth date, subtract one year from the age
+  if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+    age--;
+  }
+
+  return age;
+};

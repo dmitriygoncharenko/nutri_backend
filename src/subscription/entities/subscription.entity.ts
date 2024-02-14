@@ -12,6 +12,7 @@ import {
 import { isArray } from "class-validator";
 import { SubscriptionStatusEnum } from "../enums/subscription-status.enum";
 import { MealEntity } from "src/meal/entities/meal.entity";
+import { MealGroupEntity } from "src/meal/entities/meal-group.entity";
 
 @Entity("subscriptions")
 export class SubscriptionEntity extends AbstractEntity {
@@ -66,10 +67,10 @@ export class SubscriptionEntity extends AbstractEntity {
   @Column({ type: "int" })
   generations: number;
 
-  @ApiProperty({ type: () => MealEntity, isArray: true })
-  @OneToMany(() => MealEntity, (entity) => entity.subscription, {
+  @ApiProperty({ type: () => MealGroupEntity, isArray: true })
+  @OneToMany(() => MealGroupEntity, (entity) => entity.subscription, {
     cascade: true,
     onDelete: "CASCADE",
   })
-  meals: MealEntity[];
+  mealGroups: MealGroupEntity[];
 }

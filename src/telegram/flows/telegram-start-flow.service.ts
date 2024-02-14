@@ -33,6 +33,7 @@ import { getMealTypeLabels } from "src/meal/enums/meal-type.enum";
 import { OpenAIService } from "src/openai/services/openai.service";
 import { calculateMetabolismPrompt } from "src/openai/prompts/metabolism.prompt";
 import { getRegionLabels } from "src/user/enums/user-region.enum";
+import { calcMetabolism } from "src/user/utilities/profile.utility";
 
 @Injectable()
 export class TelegramStartFlowService {
@@ -184,6 +185,7 @@ export class TelegramStartFlowService {
           value: { activity_level: string[] }
         ) => {
           const { activity_level } = value;
+
           await this.userProfileService.update(user.profileId, {
             activity_level: findEnumKeyByValue(
               getUserActivityLevelLabels(),
@@ -207,17 +209,14 @@ export class TelegramStartFlowService {
         field: "goal",
         action: async (user: UserEntity, value: { goal: string[] }) => {
           const { goal } = value;
-          await this.userProfileService.update(user.profileId, {
-            goal: filterEnumKeysByValue(getUserGoalLabels(), goal),
-          });
-          const userProfile = await this.userProfileService.findOne({
+
+          const profile = await this.userProfileService.findOne({
             id: user.profileId,
           });
-          const { metabolism } = await this.openAiService.chatGPT(
-            calculateMetabolismPrompt(userProfile)
-          );
-          await this.userProfileService.update(userProfile.id, {
-            metabolism: parseInt(String(metabolism)),
+          profile.goal = filterEnumKeysByValue(getUserGoalLabels(), goal);
+          await this.userProfileService.update(user.profileId, {
+            goal: profile.goal,
+            metabolism: calcMetabolism(profile) || undefined,
           });
         },
         poll: {
@@ -273,8 +272,10 @@ export class TelegramStartFlowService {
         message: async (user: UserEntity) => {
           const userHasFreeSubscription =
             !!(await this.subscriptionService.findOne({
-              userId: user.id,
-              type: SubscriptionTypeEnum.FREE,
+              where: {
+                userId: user.id,
+                type: SubscriptionTypeEnum.FREE,
+              },
             }));
           if (userHasFreeSubscription) {
             await this.userService.update(user.id, {

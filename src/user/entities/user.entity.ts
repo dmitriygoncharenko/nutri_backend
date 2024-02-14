@@ -60,14 +60,6 @@ export class UserEntity extends AbstractEntity {
   @Column({ type: "text", nullable: true })
   phone?: string;
 
-  // @ManyToMany(() => UserEntity, (user) => user.clients)
-  // @JoinTable({name: 'user_clients'})
-  // clients: UserEntity[];
-
-  // @ManyToMany(() => UserEntity, (user) => user.coaches)
-  // @JoinTable({name: 'user_coaches', joinColumn: 'clientId', })
-  // coaches: UserEntity;
-
   @ManyToMany(() => UserEntity, (user) => user.clients)
   @JoinTable({
     name: "user_coaches",
@@ -121,10 +113,6 @@ export class UserEntity extends AbstractEntity {
     nullable: true,
   })
   telegramFlow: TelegramFlowEnum;
-
-  @ApiPropertyOptionalString()
-  @Column({ type: "text", nullable: true })
-  aiThread: string;
 
   @OneToOne(() => UserProfileEntity, {
     nullable: true,

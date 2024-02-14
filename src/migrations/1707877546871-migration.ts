@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1707717764324 implements MigrationInterface {
-    name = 'Migration1707717764324'
+export class Migration1707877546871 implements MigrationInterface {
+    name = 'Migration1707877546871'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -109,30 +109,6 @@ export class Migration1707717764324 implements MigrationInterface {
                 "weight_metric" "public"."user_weights_weight_metric_enum" NOT NULL DEFAULT 'KG',
                 "userId" uuid NOT NULL,
                 CONSTRAINT "PK_c706b25a032e9440ddc219762c0" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "analysis_values" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "value" numeric,
-                "description" text,
-                "date" TIMESTAMP WITH TIME ZONE,
-                "analysisId" uuid NOT NULL,
-                CONSTRAINT "PK_49b9d1f3ff0fe0a17738465a8ac" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "analysis" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "caption" text NOT NULL,
-                "userId" uuid NOT NULL,
-                CONSTRAINT "PK_300795d51c57ef52911ed65851f" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
@@ -251,6 +227,46 @@ export class Migration1707717764324 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
+            CREATE TABLE "diary_waters" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "value" integer NOT NULL,
+                "diaryId" uuid NOT NULL,
+                "time" TIME WITH TIME ZONE NOT NULL,
+                CONSTRAINT "PK_d90a1b6fba3af5063b593dd79dc" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "diary_foods" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "diaryId" uuid NOT NULL,
+                "time" TIME WITH TIME ZONE NOT NULL,
+                "eaten" boolean NOT NULL DEFAULT false,
+                CONSTRAINT "PK_36103932514301d7d058e455314" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "diaries" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "userId" uuid NOT NULL,
+                "date" date NOT NULL,
+                "sleep" text,
+                "energy" text,
+                "emotion" text,
+                "physical" text,
+                "comment" text,
+                CONSTRAINT "PK_ffd738e7d40dcfa59283dcaae87" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
             CREATE TABLE "user_hrzones" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
@@ -311,29 +327,54 @@ export class Migration1707717764324 implements MigrationInterface {
                 "userId" uuid NOT NULL,
                 "status" "public"."MealStatusEnum" NOT NULL DEFAULT 'created',
                 "type" "public"."MealTypeEnum" NOT NULL,
-                "query" text,
-                "cookTime" integer,
-                "steps" jsonb NOT NULL DEFAULT '[]',
-                "elements" jsonb NOT NULL DEFAULT '[]',
-                "fats" integer,
-                "carbo" integer,
-                "protein" integer,
-                "calories" integer,
-                "title" text,
-                "description" text,
-                "intro" text,
-                "ingredients" jsonb NOT NULL DEFAULT '[]',
+                "response" text,
                 "image" text,
                 "date" TIMESTAMP WITH TIME ZONE,
-                "subscriptionId" uuid NOT NULL,
+                "mealGroupId" uuid NOT NULL,
+                "messageId" text,
+                "runId" text,
                 CONSTRAINT "PK_e6f830ac9b463433b58ad6f1a59" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TYPE "public"."MealGroupStatusEnum" AS ENUM(
+                'created',
+                'meals_queue',
+                'meals_generation',
+                'meal_generating',
+                'complete',
+                'failed'
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "meal_groups" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "start" TIMESTAMP WITH TIME ZONE NOT NULL,
+                "end" TIMESTAMP WITH TIME ZONE NOT NULL,
+                "threadId" text,
+                "status" "public"."MealGroupStatusEnum" NOT NULL DEFAULT 'created',
+                "failMessage" text,
+                "ingredients" text,
+                "subscriptionId" uuid NOT NULL,
+                CONSTRAINT "PK_45c2c168cd56afaf543bb7e6cd7" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
             CREATE TYPE "public"."SubscriptionTypeEnum" AS ENUM('paid', 'free')
         `);
         await queryRunner.query(`
-            CREATE TYPE "public"."SubscriptionStatusEnum" AS ENUM('created', 'paid', 'not_paid', 'expired')
+            CREATE TYPE "public"."SubscriptionStatusEnum" AS ENUM(
+                'created',
+                'paid',
+                'not_paid',
+                'in_progress',
+                'processed',
+                'expired',
+                'failed'
+            )
         `);
         await queryRunner.query(`
             CREATE TABLE "subscriptions" (
@@ -406,7 +447,6 @@ export class Migration1707717764324 implements MigrationInterface {
                 "telegramUsername" text,
                 "telegramState" "public"."users_telegramstate_enum" NOT NULL DEFAULT 'default',
                 "telegramFlow" "public"."users_telegramflow_enum",
-                "aiThread" text,
                 CONSTRAINT "UQ_d7925ac1be04ad9d0f11c14d707" UNIQUE ("auth0Id"),
                 CONSTRAINT "UQ_df18d17f84763558ac84192c754" UNIQUE ("telegramId"),
                 CONSTRAINT "REL_b1bda35cdb9a2c1b777f5541d8" UNIQUE ("profileId"),
@@ -414,61 +454,27 @@ export class Migration1707717764324 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
-            CREATE TABLE "diary_foods" (
+            CREATE TABLE "analysis" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "diaryId" uuid NOT NULL,
-                "time" TIME WITH TIME ZONE NOT NULL,
-                "eaten" boolean NOT NULL DEFAULT false,
-                CONSTRAINT "PK_36103932514301d7d058e455314" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "diaries" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "caption" text NOT NULL,
                 "userId" uuid NOT NULL,
-                "date" date NOT NULL,
-                "sleep" text,
-                "energy" text,
-                "emotion" text,
-                "physical" text,
-                "comment" text,
-                CONSTRAINT "PK_ffd738e7d40dcfa59283dcaae87" PRIMARY KEY ("id")
+                CONSTRAINT "PK_300795d51c57ef52911ed65851f" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
-            CREATE TABLE "diary_waters" (
+            CREATE TABLE "analysis_values" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "value" integer NOT NULL,
-                "diaryId" uuid NOT NULL,
-                "time" TIME WITH TIME ZONE NOT NULL,
-                CONSTRAINT "PK_d90a1b6fba3af5063b593dd79dc" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "meal_groups" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                CONSTRAINT "PK_45c2c168cd56afaf543bb7e6cd7" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "meal_generate_plan" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                CONSTRAINT "PK_eaf079b4f1704cb052e145dedb2" PRIMARY KEY ("id")
+                "value" numeric,
+                "description" text,
+                "date" TIMESTAMP WITH TIME ZONE,
+                "analysisId" uuid NOT NULL,
+                CONSTRAINT "PK_49b9d1f3ff0fe0a17738465a8ac" PRIMARY KEY ("id")
             )
         `);
         await queryRunner.query(`
@@ -524,14 +530,6 @@ export class Migration1707717764324 implements MigrationInterface {
             ADD CONSTRAINT "FK_52a1d12efaab2946140fea97548" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
-            ALTER TABLE "analysis_values"
-            ADD CONSTRAINT "FK_41a50de11c635735765c9e7e591" FOREIGN KEY ("analysisId") REFERENCES "analysis"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "analysis"
-            ADD CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
-        await queryRunner.query(`
             ALTER TABLE "user_heights"
             ADD CONSTRAINT "FK_69b1ee696a9c4292956dc1abaaf" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
@@ -576,6 +574,18 @@ export class Migration1707717764324 implements MigrationInterface {
             ADD CONSTRAINT "FK_56db178ef9ab65eac669a01f7ff" FOREIGN KEY ("responseId") REFERENCES "user_questionnaire_responses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
+            ALTER TABLE "diary_waters"
+            ADD CONSTRAINT "FK_fc8a9819736e95f44eda7446f72" FOREIGN KEY ("diaryId") REFERENCES "diaries"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "diary_foods"
+            ADD CONSTRAINT "FK_c6ecf647615b00392ede1c0b9ff" FOREIGN KEY ("diaryId") REFERENCES "diaries"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "diaries"
+            ADD CONSTRAINT "FK_6454969d8c037fee60374c8527c" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
             ALTER TABLE "user_hrzones"
             ADD CONSTRAINT "FK_be86ce89d63ad424a14b0c701f6" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
@@ -589,7 +599,11 @@ export class Migration1707717764324 implements MigrationInterface {
         `);
         await queryRunner.query(`
             ALTER TABLE "meals"
-            ADD CONSTRAINT "FK_0423aece8a946cb37d7cdc2ce6a" FOREIGN KEY ("subscriptionId") REFERENCES "subscriptions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_2776790f38532329df87617c379" FOREIGN KEY ("mealGroupId") REFERENCES "meal_groups"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "meal_groups"
+            ADD CONSTRAINT "FK_1db3d7ba61be621d952f449c0c7" FOREIGN KEY ("subscriptionId") REFERENCES "subscriptions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
             ALTER TABLE "subscriptions"
@@ -600,16 +614,12 @@ export class Migration1707717764324 implements MigrationInterface {
             ADD CONSTRAINT "FK_b1bda35cdb9a2c1b777f5541d87" FOREIGN KEY ("profileId") REFERENCES "user_profiles"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
-            ALTER TABLE "diary_foods"
-            ADD CONSTRAINT "FK_c6ecf647615b00392ede1c0b9ff" FOREIGN KEY ("diaryId") REFERENCES "diaries"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ALTER TABLE "analysis"
+            ADD CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
-            ALTER TABLE "diaries"
-            ADD CONSTRAINT "FK_6454969d8c037fee60374c8527c" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "diary_waters"
-            ADD CONSTRAINT "FK_fc8a9819736e95f44eda7446f72" FOREIGN KEY ("diaryId") REFERENCES "diaries"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+            ALTER TABLE "analysis_values"
+            ADD CONSTRAINT "FK_41a50de11c635735765c9e7e591" FOREIGN KEY ("analysisId") REFERENCES "analysis"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
             ALTER TABLE "trainings"
@@ -636,13 +646,10 @@ export class Migration1707717764324 implements MigrationInterface {
             ALTER TABLE "trainings" DROP CONSTRAINT "FK_0c29a4986f24a6c82f07584e6d6"
         `);
         await queryRunner.query(`
-            ALTER TABLE "diary_waters" DROP CONSTRAINT "FK_fc8a9819736e95f44eda7446f72"
+            ALTER TABLE "analysis_values" DROP CONSTRAINT "FK_41a50de11c635735765c9e7e591"
         `);
         await queryRunner.query(`
-            ALTER TABLE "diaries" DROP CONSTRAINT "FK_6454969d8c037fee60374c8527c"
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "diary_foods" DROP CONSTRAINT "FK_c6ecf647615b00392ede1c0b9ff"
+            ALTER TABLE "analysis" DROP CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a"
         `);
         await queryRunner.query(`
             ALTER TABLE "users" DROP CONSTRAINT "FK_b1bda35cdb9a2c1b777f5541d87"
@@ -651,7 +658,10 @@ export class Migration1707717764324 implements MigrationInterface {
             ALTER TABLE "subscriptions" DROP CONSTRAINT "FK_fbdba4e2ac694cf8c9cecf4dc84"
         `);
         await queryRunner.query(`
-            ALTER TABLE "meals" DROP CONSTRAINT "FK_0423aece8a946cb37d7cdc2ce6a"
+            ALTER TABLE "meal_groups" DROP CONSTRAINT "FK_1db3d7ba61be621d952f449c0c7"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "meals" DROP CONSTRAINT "FK_2776790f38532329df87617c379"
         `);
         await queryRunner.query(`
             ALTER TABLE "training_plans" DROP CONSTRAINT "FK_926ca086365248594d09efb000d"
@@ -661,6 +671,15 @@ export class Migration1707717764324 implements MigrationInterface {
         `);
         await queryRunner.query(`
             ALTER TABLE "user_hrzones" DROP CONSTRAINT "FK_be86ce89d63ad424a14b0c701f6"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "diaries" DROP CONSTRAINT "FK_6454969d8c037fee60374c8527c"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "diary_foods" DROP CONSTRAINT "FK_c6ecf647615b00392ede1c0b9ff"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "diary_waters" DROP CONSTRAINT "FK_fc8a9819736e95f44eda7446f72"
         `);
         await queryRunner.query(`
             ALTER TABLE "user_questionnaire_answers" DROP CONSTRAINT "FK_56db178ef9ab65eac669a01f7ff"
@@ -696,12 +715,6 @@ export class Migration1707717764324 implements MigrationInterface {
             ALTER TABLE "user_heights" DROP CONSTRAINT "FK_69b1ee696a9c4292956dc1abaaf"
         `);
         await queryRunner.query(`
-            ALTER TABLE "analysis" DROP CONSTRAINT "FK_b17befb30bc9daf5b0fedbb283a"
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "analysis_values" DROP CONSTRAINT "FK_41a50de11c635735765c9e7e591"
-        `);
-        await queryRunner.query(`
             ALTER TABLE "user_weights" DROP CONSTRAINT "FK_52a1d12efaab2946140fea97548"
         `);
         await queryRunner.query(`
@@ -723,19 +736,10 @@ export class Migration1707717764324 implements MigrationInterface {
             DROP TABLE "trainings"
         `);
         await queryRunner.query(`
-            DROP TABLE "meal_generate_plan"
+            DROP TABLE "analysis_values"
         `);
         await queryRunner.query(`
-            DROP TABLE "meal_groups"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "diary_waters"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "diaries"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "diary_foods"
+            DROP TABLE "analysis"
         `);
         await queryRunner.query(`
             DROP TABLE "users"
@@ -756,6 +760,12 @@ export class Migration1707717764324 implements MigrationInterface {
             DROP TYPE "public"."SubscriptionTypeEnum"
         `);
         await queryRunner.query(`
+            DROP TABLE "meal_groups"
+        `);
+        await queryRunner.query(`
+            DROP TYPE "public"."MealGroupStatusEnum"
+        `);
+        await queryRunner.query(`
             DROP TABLE "meals"
         `);
         await queryRunner.query(`
@@ -772,6 +782,15 @@ export class Migration1707717764324 implements MigrationInterface {
         `);
         await queryRunner.query(`
             DROP TABLE "user_hrzones"
+        `);
+        await queryRunner.query(`
+            DROP TABLE "diaries"
+        `);
+        await queryRunner.query(`
+            DROP TABLE "diary_foods"
+        `);
+        await queryRunner.query(`
+            DROP TABLE "diary_waters"
         `);
         await queryRunner.query(`
             DROP TABLE "user_questionnaire_answers"
@@ -805,12 +824,6 @@ export class Migration1707717764324 implements MigrationInterface {
         `);
         await queryRunner.query(`
             DROP TYPE "public"."user_heights_height_metric_enum"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "analysis"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "analysis_values"
         `);
         await queryRunner.query(`
             DROP TABLE "user_weights"

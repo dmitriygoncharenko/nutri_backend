@@ -7,6 +7,8 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { SubscriptionModule } from "src/subscription/subscription.module";
 import { MealService } from "./services/meal.service";
 import { OpenAiModule } from "src/openai/openai.module";
+import { MealGroupService } from "./services/meal-group.service";
+import { MealGroupEntity } from "./entities/meal-group.entity";
 
 @Module({
   imports: [
@@ -14,9 +16,9 @@ import { OpenAiModule } from "src/openai/openai.module";
     SubscriptionModule,
     OpenAiModule,
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([MealEntity]),
+    TypeOrmModule.forFeature([MealEntity, MealGroupEntity]),
   ],
-  providers: [MealGenerateCron, MealService],
+  providers: [MealGenerateCron, MealService, MealGroupService],
   exports: [MealService],
 })
 export class MealModule {}

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MealEntity } from "../entities/meal.entity";
-import { FindOptionsWhere, Repository } from "typeorm";
+import { FindOneOptions, FindOptionsWhere, Repository } from "typeorm";
 import { Transactional } from "typeorm-transactional";
 import { MealStatusEnum } from "../enums/meal-status.enum";
 
@@ -19,6 +19,10 @@ export class MealService {
 
   async find(where: FindOptionsWhere<MealEntity>) {
     return await this.mealRepository.find({ where });
+  }
+
+  async findOne(options: FindOneOptions<MealEntity>): Promise<MealEntity> {
+    return await this.mealRepository.findOne(options);
   }
 
   async update(id: string, meal: Partial<MealEntity>) {
