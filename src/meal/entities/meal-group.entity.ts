@@ -46,11 +46,11 @@ export class MealGroupEntity extends AbstractEntity {
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
-  ingredients?: string;
+  shoppingList?: string;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
-  ingredientsRunId?: string;
+  shoppingListRunId?: string;
 
   @ApiPropertyId()
   @Column({ type: "uuid" })

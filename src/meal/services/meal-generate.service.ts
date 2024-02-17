@@ -9,11 +9,13 @@ import { SubscriptionStatusEnum } from "src/subscription/enums/subscription-stat
 import { MealService } from "./meal.service";
 import { MealEntity } from "../entities/meal.entity";
 import { MealStatusEnum } from "../enums/meal-status.enum";
-import { MealTypeEnum } from "../enums/meal-type.enum";
+import { MealTypeEnum, getMealTypeLabels } from "../enums/meal-type.enum";
 import { mealGenerationPrompt } from "src/openai/prompts/meal.prompt";
 import { OpenAIService } from "src/openai/services/openai.service";
+
 import {
   daysLeftInWeek,
+  formatDateToShortDate,
   getDatesForTheRestOfWeek,
   getStartAndEndOfWeek,
 } from "src/shared/utilities/date.utility";
@@ -22,6 +24,8 @@ import { MealGroupService } from "./meal-group.service";
 import { MealGroupStatusEnum } from "../enums/meal-group-status.enum";
 import { userPrompt } from "src/openai/prompts/user.prompt";
 import { OpenAIAssistantEnum } from "src/openai/enums/assistant.enum";
+import { markdownToNodes } from "src/telegram/utilities/telegraph.utility";
+import { TelegraphService } from "src/telegram/services/telegraph.service";
 
 @Injectable()
 export class MealGenerateCron {
@@ -35,7 +39,8 @@ export class MealGenerateCron {
     private readonly subscriptionService: SubscriptionService,
     private readonly mealService: MealService,
     private readonly openAiService: OpenAIService,
-    private readonly mealGroupService: MealGroupService
+    private readonly mealGroupService: MealGroupService,
+    private readonly telegraphService: TelegraphService
   ) {}
   private readonly logger = new Logger(MealGenerateCron.name);
 
@@ -89,7 +94,7 @@ export class MealGenerateCron {
     }
   }
 
-  @Interval(20000)
+  @Interval(10000)
   async mealQueue() {
     const mealGroup = await this.mealGroupService.findOne({
       where: { status: MealGroupStatusEnum.CREATED },
@@ -133,7 +138,7 @@ export class MealGenerateCron {
     }
   }
 
-  @Interval(20000)
+  @Interval(10000)
   async generateMealWithAI() {
     this.logger.log("start generating meal with AI");
     const mealGroup = await this.mealGroupService.findOne({
@@ -143,16 +148,7 @@ export class MealGenerateCron {
     if (!mealGroup?.id) {
       return;
     }
-    const mealsStatusList = mealGroup.meals.map((el) => el.status);
-    if (
-      mealsStatusList?.length === 1 &&
-      mealsStatusList[0] === MealStatusEnum.GENERATED
-    ) {
-      await this.mealGroupService.update(mealGroup.id, {
-        status: MealGroupStatusEnum.READY_FOR_SHOPPING,
-      });
-      return;
-    }
+
     try {
       const meal = await this.mealService.findOne({
         where: { mealGroupId: mealGroup.id, status: MealStatusEnum.CREATED },
@@ -244,17 +240,41 @@ export class MealGenerateCron {
     }
   }
 
+  @Interval(10000)
+  async findReadyForShoppingMealGroup() {
+    const mealGroup = await this.mealGroupService.findOne({
+      where: { status: MealGroupStatusEnum.MEAL_GENERATING },
+      relations: ["meals"],
+    });
+    if (!mealGroup?.id) {
+      return;
+    }
+    const mealsStatusList = Array(
+      ...new Set(mealGroup.meals.map((el) => el.status))
+    );
+    if (
+      mealsStatusList?.length === 1 &&
+      mealsStatusList[0] === MealStatusEnum.GENERATED
+    ) {
+      await this.mealGroupService.update(mealGroup.id, {
+        status: MealGroupStatusEnum.READY_FOR_SHOPPING,
+      });
+      return;
+    }
+  }
+
+  @Interval(10000)
   async createShoppingList() {
     const mealGroup = await this.mealGroupService.findOne({
       where: { status: MealGroupStatusEnum.READY_FOR_SHOPPING },
     });
     if (!mealGroup?.id) return;
     await this.mealGroupService.update(mealGroup.id, {
-      status: MealGroupStatusEnum.AWAITING_SHOPPING_LIST,
+      status: MealGroupStatusEnum.SHOPPING_LIST_IN_PROGRESS,
     });
     await this.openAiService.addThreadMessage(mealGroup.threadId, {
       role: "user",
-      content: "Write shopping list for ingredients in the thread",
+      content: "Write shopping list of ingredients for that thread",
     });
     const run = await this.openAiService.runAssistant(
       mealGroup.threadId,
@@ -262,7 +282,115 @@ export class MealGenerateCron {
     );
     if (!run?.id) return;
     await this.mealGroupService.update(mealGroup.id, {
-      ingredientsRunId: run.id,
+      shoppingListRunId: run.id,
+      status: MealGroupStatusEnum.AWAITING_SHOPPING_LIST,
     });
+  }
+
+  @Interval(40000)
+  async checkShoppingListRun() {
+    const mealGroup = await this.mealGroupService.findOne({
+      where: { status: MealGroupStatusEnum.AWAITING_SHOPPING_LIST },
+      relations: ["subscription", "subscription.user"],
+    });
+    if (!mealGroup?.id) return;
+
+    try {
+      const run = await this.openAiService.checkRun(
+        mealGroup.threadId,
+        mealGroup.shoppingListRunId
+      );
+
+      if (run.status === "completed") {
+        const messages = await this.openAiService.getThreadMessages(
+          mealGroup.threadId
+        );
+
+        const message = messages.data[0];
+        if (!message?.id) {
+          throw new Error(
+            "Shopping List run: Message from Assistant is not provided"
+          );
+        }
+        if (message.content[0].type !== "text") {
+          throw new Error("Got not text response");
+        }
+        const response = message.content[0]?.text?.value;
+        console.log("🚀 ~ MealGenerateCron ~ checkRuns ~ messages:", response);
+        await this.mealGroupService.update(mealGroup.id, {
+          shoppingList: response,
+          status: MealGroupStatusEnum.READY_TO_SEND,
+        });
+        await this.bot.api.sendMessage(
+          mealGroup.subscription.user.telegramId,
+          response
+        );
+      } else if (
+        ["requires_action", "cancelled", "failed", "expired"].includes(
+          run.status
+        )
+      ) {
+        throw new Error("Wrong run status: " + run.status);
+      }
+    } catch (err) {
+      console.log(err);
+      await this.mealGroupService.update(mealGroup.id, {
+        status: MealGroupStatusEnum.FAILED,
+        failMessage: String(err),
+      });
+    }
+  }
+
+  @Interval(20000)
+  async checkSentMealGroups() {
+    const mealGroups = await this.mealGroupService.find({
+      where: { status: MealGroupStatusEnum.READY_TO_SEND },
+      relations: ["meals"],
+    });
+    for (let mgIndex = 0; mgIndex < mealGroups.length; mgIndex++) {
+      const mealsStatus = Array(
+        ...new Set(mealGroups[mgIndex].meals.map((el) => el.status))
+      );
+      if (mealsStatus.length === 1 && mealsStatus[0] === MealStatusEnum.SENT) {
+        // all meals was sent
+        await this.mealGroupService.update(mealGroups[mgIndex].id, {
+          status: MealGroupStatusEnum.COMPLETE,
+        });
+      }
+    }
+  }
+
+  // @Interval(20000)
+  async sendMeal() {
+    const meal = await this.mealService.findOne({
+      where: { status: MealStatusEnum.GENERATED },
+      relations: ["user"],
+    });
+    if (!meal?.id) return;
+
+    try {
+      const content = markdownToNodes(meal.response);
+      const title = `${getMealTypeLabels()[meal.type]} ${formatDateToShortDate(
+        meal.date
+      )}`;
+      const pageResult = await this.telegraphService.createPage({
+        title,
+        content,
+      });
+      if (!pageResult.ok) throw new Error("Page not created");
+      await this.bot.api.sendMessage(
+        meal.user.telegramId,
+        pageResult.result.url
+      );
+      await this.mealService.update(meal.id, {
+        status: MealStatusEnum.SENT,
+        url: pageResult.result.url,
+      });
+    } catch (err) {
+      console.log(err);
+      await this.mealService.update(meal.id, {
+        status: MealStatusEnum.SENT_FAILED,
+      });
+    }
   }
 }

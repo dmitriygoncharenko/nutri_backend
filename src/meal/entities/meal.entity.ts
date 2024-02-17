@@ -13,6 +13,7 @@ import { SubscriptionEntity } from "src/subscription/entities/subscription.entit
 import { MealStatusEnum } from "../enums/meal-status.enum";
 import { ApiPropertyOptionalDate } from "src/shared/decorators/date.decorator";
 import { MealGroupEntity } from "./meal-group.entity";
+import { UserEntity } from "src/user/entities/user.entity";
 
 interface IngredientInterface {
   name: string;
@@ -73,10 +74,18 @@ export class MealEntity extends AbstractEntity {
   @Column({ type: "text", nullable: true })
   runId?: string;
 
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  url?: string;
+
   @ApiProperty({
     type: () => MealGroupEntity,
   })
   @ManyToOne(() => MealGroupEntity, (entity) => entity.meals)
   @JoinColumn({ name: "mealGroupId" })
   mealGroup: MealGroupEntity;
+
+  @ManyToOne(() => UserEntity, (entity) => entity.meals)
+  @JoinColumn({ name: "userId" })
+  user: UserEntity;
 }

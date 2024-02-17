@@ -40,6 +40,7 @@ import {
 import { TelegramFlowStateEnum } from "src/telegram/enums/telegram-flow-state.enum";
 import { TelegramFlowEnum } from "src/telegram/enums/telegram-flow.enum";
 import { SubscriptionEntity } from "src/subscription/entities/subscription.entity";
+import { MealEntity } from "src/meal/entities/meal.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -193,4 +194,10 @@ export class UserEntity extends AbstractEntity {
     onDelete: "CASCADE",
   })
   subscriptions: SubscriptionEntity[];
+
+  @OneToMany(() => MealEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  meals: SubscriptionEntity[];
 }

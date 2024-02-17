@@ -9,12 +9,14 @@ import { MealService } from "./services/meal.service";
 import { OpenAiModule } from "src/openai/openai.module";
 import { MealGroupService } from "./services/meal-group.service";
 import { MealGroupEntity } from "./entities/meal-group.entity";
+import { TelegramModule } from "src/telegram/telegram.module";
 
 @Module({
   imports: [
     UserModule,
     SubscriptionModule,
     OpenAiModule,
+    TelegramModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([MealEntity, MealGroupEntity]),
   ],

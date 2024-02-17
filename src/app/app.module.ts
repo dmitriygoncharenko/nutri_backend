@@ -22,6 +22,7 @@ import { join } from "path";
 import { OpenAiModule } from "src/openai/openai.module";
 import { SubscriptionModule } from "src/subscription/subscription.module";
 import { MealModule } from "src/meal/meal.module";
+import { RestModule } from "src/rest/rest.module";
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { MealModule } from "src/meal/meal.module";
     OpenAiModule,
     SubscriptionModule,
     MealModule,
+    RestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,6 +6,17 @@ export const validateDate = (value: string | Date) => {
   return new Date(value);
 };
 
+export const formatDateToShortDate = (date) => {
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  };
+  return new Intl.DateTimeFormat("ru-RU", options)
+    .format(date)
+    .replace(".", "");
+};
+
 export const daysLeftInWeek = () => {
   const today = new Date();
   let dayOfWeek = today.getDay();
