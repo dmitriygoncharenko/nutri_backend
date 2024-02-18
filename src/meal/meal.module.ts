@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MealEntity } from "./entities/meal.entity";
-import { MealGenerateCron } from "./services/meal-generate.service";
+import { MealGenerateCron } from "./services/meal.cron";
 import { UserModule } from "src/user/user.module";
 import { ScheduleModule } from "@nestjs/schedule";
 import { SubscriptionModule } from "src/subscription/subscription.module";

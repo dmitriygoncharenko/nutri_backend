@@ -11,7 +11,7 @@ export class OpenAiController {
     summary: "test open ai",
   })
   @ApiResponse({ status: 200, description: "Success" })
-  async testAi(): Promise<string> {
+  async testAi(): Promise<any> {
     return await this.openaiService.test();
   }
 }
