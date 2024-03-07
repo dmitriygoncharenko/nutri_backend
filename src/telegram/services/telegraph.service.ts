@@ -4,7 +4,7 @@ import {
   TelegraphPageInterface,
   TelegraphPageResponseInterface,
 } from "../interfaces/telegraph.interface";
-import { telegraphConfig } from "src/config/telegraph.config";
+import { telegramConfig } from "src/config/telegram.config";
 
 @Injectable()
 export class TelegraphService {
@@ -13,15 +13,15 @@ export class TelegraphService {
   async createPage(
     page: TelegraphPageInterface
   ): Promise<TelegraphPageResponseInterface> {
-    const { accessToken } = telegraphConfig();
+    const { accessToken } = telegramConfig().telegraph;
     const params: TelegraphPageInterface = {
-      access_token:
-        "d3b25feccb89e508a9114afb82aa421fe2a9712b963b387cc5ad71e58722",
+      access_token: accessToken,
       author_name: "NUTRINETIC",
       author_url: "https://t.me/nutri_lab_bot",
       return_content: true,
       ...page,
     };
+    //@ts-ignore
     const { data } = await this.restService.post(
       "https://api.telegra.ph/createPage",
       {

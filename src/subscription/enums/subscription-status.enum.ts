@@ -1,9 +1,7 @@
 export enum SubscriptionStatusEnum {
   CREATED = "created",
   PAID = "paid",
-  NOT_PAID = "not_paid",
+  CANCELED = "canceled",
   IN_PROGRESS = "in_progress",
-  PROCESSED = "processed",
-  EXPIRED = "expired",
   FAILED = "failed",
 }

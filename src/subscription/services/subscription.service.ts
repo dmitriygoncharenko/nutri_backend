@@ -9,12 +9,18 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { SubscriptionTypeEnum } from "../enums/subscription-type.enum";
 import { SubscriptionStatusEnum } from "../enums/subscription-status.enum";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { SubscriptionQueueEnum } from "../../queue/enums/subscription-queue.enum";
+import { MealQueueEnum } from "src/queue/enums/meal-queue.enum";
 
 @Injectable()
 export class SubscriptionService {
   constructor(
     @InjectRepository(SubscriptionEntity)
-    private subscriptionRepository: Repository<SubscriptionEntity>
+    private subscriptionRepository: Repository<SubscriptionEntity>,
+    @InjectQueue(SubscriptionQueueEnum.SUBSCRIPTION_QUEUE)
+    private subscriptionQueue: Queue
   ) {}
   async create(value: Partial<SubscriptionEntity>) {
     return await this.subscriptionRepository.save(

@@ -1,5 +1,9 @@
 import { HttpService } from "@nestjs/axios";
-import { Injectable, ForbiddenException } from "@nestjs/common";
+import {
+  Injectable,
+  ForbiddenException,
+  BadRequestException,
+} from "@nestjs/common";
 import { map, catchError, lastValueFrom } from "rxjs";
 import { AxiosRequestConfig } from "axios";
 
@@ -13,7 +17,7 @@ export class RestService {
       .pipe(map((res) => res.data))
       .pipe(
         catchError((err) => {
-          throw new ForbiddenException(JSON.stringify(err));
+          throw new BadRequestException(JSON.stringify(err));
         })
       );
 
@@ -28,7 +32,7 @@ export class RestService {
       .pipe(map((res) => res.data))
       .pipe(
         catchError((err) => {
-          throw new ForbiddenException(JSON.stringify(err));
+          throw new BadRequestException(JSON.stringify(err));
         })
       );
 

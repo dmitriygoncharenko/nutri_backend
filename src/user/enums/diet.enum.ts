@@ -7,7 +7,7 @@ export enum DietEnum {
   OVO_VEGETARIAN = "ovo_vegetarian",
   PALEO = "paleo",
   KETO = "keto",
-  ALL = "all",
+  ALL = "no_special_diet",
 }
 
 export const getDietLabels = (): Record<DietEnum, string> => ({

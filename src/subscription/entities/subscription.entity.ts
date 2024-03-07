@@ -4,15 +4,12 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { SubscriptionTypeEnum } from "../enums/subscription-type.enum";
 import { ApiPropertyId } from "src/shared/decorators/uuid.decorator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ApiPropertyDate } from "src/shared/decorators/date.decorator";
 import {
   ApiPropertyInt,
   ApiPropertyOptionalString,
 } from "src/shared/decorators/api.decorator";
-import { isArray } from "class-validator";
 import { SubscriptionStatusEnum } from "../enums/subscription-status.enum";
-import { MealEntity } from "src/meal/entities/meal.entity";
-import { MealGroupEntity } from "src/meal/entities/meal-group.entity";
+import { MealWeekEntity } from "src/meal/entities/meal-week.entity";
 
 @Entity("subscriptions")
 export class SubscriptionEntity extends AbstractEntity {
@@ -23,7 +20,7 @@ export class SubscriptionEntity extends AbstractEntity {
   @ApiProperty({
     type: () => UserEntity,
   })
-  @ManyToOne(() => UserEntity, (user) => user.height)
+  @ManyToOne(() => UserEntity, (user) => user.subscriptions)
   @JoinColumn({ name: "userId" })
   user: UserEntity;
 
@@ -57,20 +54,20 @@ export class SubscriptionEntity extends AbstractEntity {
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
-  provider_payment_charge_id: string;
+  failMessage?: string;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
-  telegram_payment_charge_id: string;
+  paymentId?: string;
 
   @ApiPropertyInt()
   @Column({ type: "int" })
   generations: number;
 
-  @ApiProperty({ type: () => MealGroupEntity, isArray: true })
-  @OneToMany(() => MealGroupEntity, (entity) => entity.subscription, {
+  @ApiProperty({ type: () => MealWeekEntity, isArray: true })
+  @OneToMany(() => MealWeekEntity, (entity) => entity.subscription, {
     cascade: true,
     onDelete: "CASCADE",
   })
-  mealGroups: MealGroupEntity[];
+  mealWeeks: MealWeekEntity[];
 }

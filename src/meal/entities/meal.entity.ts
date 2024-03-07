@@ -12,14 +12,8 @@ import {
 import { SubscriptionEntity } from "src/subscription/entities/subscription.entity";
 import { MealStatusEnum } from "../enums/meal-status.enum";
 import { ApiPropertyOptionalDate } from "src/shared/decorators/date.decorator";
-import { MealGroupEntity } from "./meal-group.entity";
+import { MealDayEntity } from "./meal-day.entity";
 import { UserEntity } from "src/user/entities/user.entity";
-
-interface IngredientInterface {
-  name: string;
-  quantity: number;
-  metric: string;
-}
 
 @Entity("meals")
 export class MealEntity extends AbstractEntity {
@@ -56,15 +50,15 @@ export class MealEntity extends AbstractEntity {
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
-  image?: string;
+  failMessage?: string;
 
-  @ApiPropertyOptionalDate()
-  @Column({ type: "timestamptz", nullable: true })
-  date?: Date;
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", nullable: true })
+  image?: string;
 
   @ApiPropertyId()
   @Column({ type: "uuid" })
-  mealGroupId: string;
+  mealDayId: string;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
@@ -79,11 +73,11 @@ export class MealEntity extends AbstractEntity {
   url?: string;
 
   @ApiProperty({
-    type: () => MealGroupEntity,
+    type: () => MealDayEntity,
   })
-  @ManyToOne(() => MealGroupEntity, (entity) => entity.meals)
-  @JoinColumn({ name: "mealGroupId" })
-  mealGroup: MealGroupEntity;
+  @ManyToOne(() => MealDayEntity, (entity) => entity.meals)
+  @JoinColumn({ name: "mealDayId" })
+  mealDay: MealDayEntity;
 
   @ManyToOne(() => UserEntity, (entity) => entity.meals)
   @JoinColumn({ name: "userId" })

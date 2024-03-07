@@ -89,7 +89,7 @@ export class TelegramUpdate {
     value?: string | string[]
   ) {
     try {
-      let user = await this.userService.findOne({ telegramId });
+      let user = await this.userService.findOne({ where: { telegramId } });
       if (!user) throw new BadRequestException({ message: "User not found" });
       if (user.telegramFlow === TelegramFlowEnum.DEFAULT) return;
 
@@ -141,7 +141,6 @@ export class TelegramUpdate {
       } else {
         index = index + 1;
         index = await this.skipStepsAndFindNext(index, steps, user);
-        console.log("🚀 ~ TelegramUpdate ~ index:", index);
         nextStep = steps[index];
         await this.userService.update(user.id, {
           telegramState: nextStep.key,
@@ -165,7 +164,7 @@ export class TelegramUpdate {
         first_name,
         last_name,
       } = ctx.update.message.from;
-      let user = await this.userService.findOne({ telegramId });
+      let user = await this.userService.findOne({ where: { telegramId } });
       if (!user) {
         user = await this.userService.create({
           telegramId,
@@ -192,15 +191,9 @@ export class TelegramUpdate {
   async onMessage(ctx: Context) {
     // On payment success
     if (ctx.update.message?.successful_payment) {
-      const {
-        invoice_payload,
-        telegram_payment_charge_id,
-        provider_payment_charge_id,
-      } = ctx.update.message?.successful_payment;
+      const { invoice_payload } = ctx.update.message?.successful_payment;
       await this.subscriptionService.update(invoice_payload, {
         status: SubscriptionStatusEnum.PAID,
-        telegram_payment_charge_id,
-        provider_payment_charge_id,
       });
 
       return;
@@ -210,7 +203,7 @@ export class TelegramUpdate {
     if (!commands.includes(ctx.message.text)) {
       this.handleUserReply(telegramId, ctx, ctx.message.text);
     } else {
-      const user = await this.userService.findOne({ telegramId });
+      const user = await this.userService.findOne({ where: { telegramId } });
       if (!user)
         throw new BadRequestException({ message: "Пользователь не найден" });
       await this.userService.update(user.id, {
@@ -224,6 +217,7 @@ export class TelegramUpdate {
   @On("poll_answer")
   async onPollAnswer(ctx: Context) {
     const { id } = ctx.pollAnswer.user;
+    console.log("🚀 ~ TelegramUpdate ~ onPollAnswer ~ id:", id);
     this.handleUserReply(id, ctx);
   }
 
@@ -240,30 +234,6 @@ export class TelegramUpdate {
         false,
         "An error occurred while processing your payment. Please try again."
       );
-    }
-  }
-
-  async sendRecipeToTelegram() {
-    const photoURL = `https://s3.timeweb.com/28cccca7-a4a6083c-5d86-48e1-9443-f3e3a71dacd5/Screenshot 2024-02-17 at 14.34.05.png`;
-    const caption = `☕️ Завтрак вс, 18 февр`;
-    const reply_markup = {
-      inline_keyboard: [
-        [
-          {
-            text: "Открыть рецепт",
-            url: `https://telegra.ph/Zavtrak-vs-18-fevr-02-17`, // Link URL
-          },
-        ],
-      ],
-    };
-
-    try {
-      await this.bot.api.sendPhoto(764201935, photoURL, {
-        caption,
-        reply_markup,
-      });
-    } catch (error) {
-      console.error("Error sending photo:", error);
     }
   }
 }

@@ -1,18 +1,18 @@
 import { NestjsGrammyModule } from "@grammyjs/nestjs";
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "src/user/user.module";
-import { TelegramCron } from "./services/telegram.cron";
 import { TelegramUpdate } from "./services/telegram.update";
 import { TelegramFlowService } from "./flows/telegram-flow.service";
 import { TelegramStartFlowService } from "./flows/telegram-start-flow.service";
 import { TelegramRecipeFlowService } from "./flows/telegram-recipe-flow.service";
-import { TelegramWeightFlowService } from "./flows/telegram-weight-flow.service";
-import { TelegramPayFlowService } from "./flows/telegram-pay-flow.service";
 import { SubscriptionModule } from "src/subscription/subscription.module";
 import { OpenAiModule } from "src/openai/openai.module";
 import { TelegraphService } from "./services/telegraph.service";
 import { RestModule } from "src/rest/rest.module";
+import { telegramConfig } from "src/config/telegram.config";
+import { TelegramService } from "./services/telegram.service";
+import { BullModule } from "@nestjs/bullmq";
+import { SubscriptionQueueEnum } from "src/queue/enums/subscription-queue.enum";
 
 @Module({
   imports: [
@@ -21,17 +21,9 @@ import { RestModule } from "src/rest/rest.module";
     SubscriptionModule,
     OpenAiModule,
     RestModule,
-    // GRAMMY
-    NestjsGrammyModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        token:
-          configService.get("TELEGRAM_BOT_TOKEN") ||
-          "6023947364:AAG6r3pccWTbCKTQWMasE4aT0gaazCUNWx4",
-        // , // nutrilab
-        // '6177188168:AAEQxK2bsAMRXk0a0TwnWaAudGYdPeyRu2I', //TODO env
-      }),
-      inject: [ConfigService],
+    NestjsGrammyModule.forRoot(telegramConfig().telegram),
+    BullModule.registerQueue({
+      name: SubscriptionQueueEnum.SUBSCRIPTION_PAYMENT_QUEUE,
     }),
   ],
   providers: [
@@ -39,18 +31,16 @@ import { RestModule } from "src/rest/rest.module";
     TelegramRecipeFlowService,
     TelegramStartFlowService,
     TelegramFlowService,
-    TelegramWeightFlowService,
-    TelegramPayFlowService,
     TelegraphService,
+    TelegramService,
   ],
   exports: [
     TelegramUpdate,
     TelegramStartFlowService,
     TelegramFlowService,
     TelegramRecipeFlowService,
-    TelegramWeightFlowService,
-    TelegramPayFlowService,
     TelegraphService,
+    TelegramService,
   ],
 })
 export class TelegramModule {}

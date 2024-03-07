@@ -1,26 +1,19 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MealEntity } from "./entities/meal.entity";
-import { MealGenerateCron } from "./services/meal.cron";
-import { UserModule } from "src/user/user.module";
-import { ScheduleModule } from "@nestjs/schedule";
-import { SubscriptionModule } from "src/subscription/subscription.module";
+import { MealDayEntity } from "./entities/meal-day.entity";
+import { MealController } from "./controllers/meal.controller";
+import { MealWeekEntity } from "./entities/meal-week.entity";
 import { MealService } from "./services/meal.service";
-import { OpenAiModule } from "src/openai/openai.module";
-import { MealGroupService } from "./services/meal-group.service";
-import { MealGroupEntity } from "./entities/meal-group.entity";
-import { TelegramModule } from "src/telegram/telegram.module";
+import { MealDayService } from "./services/meal-day.service";
+import { MealWeekService } from "./services/meal-week.service";
 
 @Module({
   imports: [
-    UserModule,
-    SubscriptionModule,
-    OpenAiModule,
-    TelegramModule,
-    ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([MealEntity, MealGroupEntity]),
+    TypeOrmModule.forFeature([MealWeekEntity, MealDayEntity, MealEntity]),
   ],
-  providers: [MealGenerateCron, MealService, MealGroupService],
-  exports: [MealService],
+  controllers: [MealController],
+  providers: [MealService, MealDayService, MealWeekService],
+  exports: [MealService, MealDayService, MealWeekService],
 })
 export class MealModule {}

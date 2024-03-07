@@ -12,6 +12,8 @@ export class OpenAiController {
   })
   @ApiResponse({ status: 200, description: "Success" })
   async testAi(): Promise<any> {
-    return await this.openaiService.test();
+    return await this.openaiService.createImage(
+      "Create an image of LEGO like constructor of Master and Margarita of Bulgakov"
+    );
   }
 }

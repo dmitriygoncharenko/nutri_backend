@@ -1,11 +1,13 @@
 import { auth0Config } from "./auth0.config";
 import { databaseConfig } from "./database.config";
 import { mailConfig } from "./mail.config";
-import { telegraphConfig } from "./telegraph.config";
+import { s3Config } from "./s3.config";
+import { telegramConfig } from "./telegram.config";
 
 export default () => ({
   databaseConfig: databaseConfig(),
   auth0Config: auth0Config(),
   mailConfig: mailConfig(),
-  telegraphConfig: telegraphConfig(),
+  telegraphConfig: telegramConfig(),
+  s3Config: s3Config(),
 });

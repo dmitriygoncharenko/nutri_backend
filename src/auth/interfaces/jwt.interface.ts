@@ -1,4 +1,4 @@
-import { JsonObject } from "../../common/interfaces/json-object.interface";
+import { JsonObject } from "../../shared/interfaces/json-object.interface";
 
 export interface JwtPayload extends JsonObject {
   /** Issuer (who created and signed this token) */

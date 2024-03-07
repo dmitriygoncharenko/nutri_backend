@@ -5,7 +5,6 @@ export const userPrompt = (
   profile: Partial<UserProfileEntity>
 ): MessageCreateParams[] => {
   return [
-    { role: "user", content: `user name: ${profile.telegramName}` },
     { role: "user", content: `gender: ${profile.gender}` },
     { role: "user", content: `daily calories: ${profile.metabolism}` },
     { role: "user", content: `date of birth: ${profile.dob}` },

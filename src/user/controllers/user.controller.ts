@@ -36,7 +36,7 @@ export class UserController {
   })
   @ApiResponse({ status: 200, description: "Success", type: UserEntity })
   async getUser(@Param("id") id: string): Promise<UserEntity> {
-    return await this.userService.findOne({ id });
+    return await this.userService.findOne({ where: { id } });
   }
 
   @Get("clients")

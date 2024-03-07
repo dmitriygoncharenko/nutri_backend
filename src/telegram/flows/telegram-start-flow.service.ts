@@ -5,18 +5,13 @@ import { UserService } from "src/user/services/user.service";
 import { UserEntity } from "src/user/entities/user.entity";
 import { UserProfileService } from "src/user/services/user-profile.service";
 import { UserGenderEnum } from "src/user/enums/user-gender.enum";
-import { UserWeightService } from "src/user/services/user-weight.service";
-import { UserHeightService } from "src/user/services/user-height.service";
 import { SendGridService } from "@anchan828/nest-sendgrid";
 import { randomNumber } from "src/shared/utilities/random.utility";
 import { UserEmailCodeService } from "src/user/services/user-code.service";
 import { validateEmail } from "src/shared/utilities/email.utility";
-import { validateDate } from "src/shared/utilities/date.utility";
-import { join } from "path";
 
-import { DietEnum, getDietLabels } from "src/user/enums/diet.enum";
-import { Context, InlineKeyboard, InputFile } from "grammy";
-import { createReadStream } from "fs";
+import { getDietLabels } from "src/user/enums/diet.enum";
+import { Context } from "grammy";
 import { stringToNumber } from "src/shared/utilities/number.utility";
 import { getUserActivityLevelLabels } from "src/user/enums/user-activity-level.enum";
 import {
@@ -24,29 +19,28 @@ import {
   filterEnumKeysByValue,
 } from "src/shared/utilities/enum.utility";
 import { getUserGoalLabels } from "src/user/enums/user-goal.enum";
-import { TelegramPayFlowService } from "./telegram-pay-flow.service";
 import { SubscriptionService } from "src/subscription/services/subscription.service";
 import { SubscriptionTypeEnum } from "src/subscription/enums/subscription-type.enum";
-import { TelegramFlowEnum } from "../enums/telegram-flow.enum";
 import { SubscriptionStatusEnum } from "src/subscription/enums/subscription-status.enum";
 import { getMealTypeLabels } from "src/meal/enums/meal-type.enum";
 import { OpenAIService } from "src/openai/services/openai.service";
-import { calculateMetabolismPrompt } from "src/openai/prompts/metabolism.prompt";
 import { getRegionLabels } from "src/user/enums/user-region.enum";
 import { calcMetabolism } from "src/user/utilities/profile.utility";
+import { InjectQueue } from "@nestjs/bullmq";
+import { SubscriptionQueueEnum } from "src/queue/enums/subscription-queue.enum";
+import { Queue } from "bullmq";
 
 @Injectable()
 export class TelegramStartFlowService {
   constructor(
     private userService: UserService,
     private userProfileService: UserProfileService,
-    private userWeightService: UserWeightService,
-    private userHeightService: UserHeightService,
     private userEmailCodeService: UserEmailCodeService,
     private readonly sendGridService: SendGridService,
-    private readonly telegramPayFlowService: TelegramPayFlowService,
     private readonly subscriptionService: SubscriptionService,
-    private readonly openAiService: OpenAIService
+    private readonly openAiService: OpenAIService,
+    @InjectQueue(SubscriptionQueueEnum.SUBSCRIPTION_PAYMENT_QUEUE)
+    private readonly subscriptionPaymentQueue: Queue
   ) {}
 
   getSteps(): TelegramFlowStepInterface[] {
@@ -277,27 +271,30 @@ export class TelegramStartFlowService {
                 type: SubscriptionTypeEnum.FREE,
               },
             }));
-          if (userHasFreeSubscription) {
-            await this.userService.update(user.id, {
-              telegramFlow: TelegramFlowEnum.PAY,
-              telegramState: TelegramFlowStateEnum.DEFAULT,
-            });
-            return null;
-          } else {
-            await this.subscriptionService.create({
-              userId: user.id,
-              type: SubscriptionTypeEnum.FREE,
-              status: SubscriptionStatusEnum.PAID,
-              generations: 7,
-            });
-            return "Открыли для тебя пробный период на одну неделю. Уже готовим индивидуальное меню на сегодня. А пока предлагаем посмотреть короткий ролик о том, как Nutrinetic помогает людям быть здоровыми.";
+          let generations = 7;
+          let type = SubscriptionTypeEnum.PAID;
+          let status = SubscriptionStatusEnum.CREATED;
+          if (!userHasFreeSubscription) {
+            generations = 1;
+            type = SubscriptionTypeEnum.FREE;
+            status = SubscriptionStatusEnum.PAID;
           }
+          const subscription = await this.subscriptionService.create({
+            userId: user.id,
+            type,
+            status,
+            generations,
+          });
+          await this.subscriptionPaymentQueue.add(
+            "New subscription",
+            subscription.id
+          );
+          return type === SubscriptionTypeEnum.FREE
+            ? "🚀🚀🚀 Открыли для тебя пробный период на один день. Уже готовим индивидуальное меню по твоим ответам. Ожидай список покупок и рецепты. Уведомление придёт в этом боте."
+            : "🚀🚀🚀 Отлично, направляю тебе ссылку на оплату твоей подписки.";
         },
         field: null,
         action: null,
-        file: {
-          url: join(process.cwd(), "public", "videos/greeting_video.mp4"),
-        },
       },
     ];
   }

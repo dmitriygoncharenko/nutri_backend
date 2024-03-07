@@ -1,13 +1,6 @@
 import { Module } from "@nestjs/common";
-import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { AnalysisModule } from "src/analysis/analysis.module";
-import { DiaryModule } from "src/diary/diary.module";
-import { NotificationModule } from "src/notification/notification.module";
-import { TrainingModule } from "src/training/training.module";
-import { QuestionnaireModule } from "src/questionnaire/questionnaire.module";
 import { UserModule } from "src/user/user.module";
-import { HmatrixModule } from "src/hmatrix/hmatrix.module";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { databaseConfig } from "src/config/database.config";
@@ -23,6 +16,9 @@ import { OpenAiModule } from "src/openai/openai.module";
 import { SubscriptionModule } from "src/subscription/subscription.module";
 import { MealModule } from "src/meal/meal.module";
 import { RestModule } from "src/rest/rest.module";
+import { S3Module } from "src/s3/s3.module";
+import { BullModule } from "@nestjs/bullmq";
+import { QueueModule } from "src/queue/queue.module";
 
 @Module({
   imports: [
@@ -52,21 +48,23 @@ import { RestModule } from "src/rest/rest.module";
         ...mailConfig(),
       }),
     }),
+    BullModule.forRoot({
+      connection: {
+        host: "localhost",
+        port: 6379,
+      },
+    }),
     AuthModule,
-    AnalysisModule,
-    DiaryModule,
-    NotificationModule,
-    TrainingModule,
-    QuestionnaireModule,
+    QueueModule,
     UserModule,
-    HmatrixModule,
     TelegramModule,
     OpenAiModule,
     SubscriptionModule,
     MealModule,
     RestModule,
+    S3Module,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [AppService],
 })
 export class AppModule {}

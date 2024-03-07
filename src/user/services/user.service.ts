@@ -42,14 +42,8 @@ export class UserService {
   //   return await this.user;
   // }
 
-  async findOne(
-    where: FindOptionsWhere<UserEntity>,
-    relations?: string[]
-  ): Promise<UserEntity> {
-    return await this.userRepository.findOne({
-      where,
-      relations,
-    });
+  async findOne(options: FindOneOptions<UserEntity>): Promise<UserEntity> {
+    return await this.userRepository.findOne(options);
   }
 
   async update(

@@ -5,7 +5,6 @@ import { UserGoalEnum } from "../enums/user-goal.enum";
 
 export const calcMetabolism = (profile: Partial<UserProfileEntity>): number => {
   const age = calculateAge(profile.dob);
-  console.log("🚀 ~ calcMetabolism ~ age:", age);
   if (!age || isNaN(age)) {
     return;
   }
@@ -17,7 +16,6 @@ export const calcMetabolism = (profile: Partial<UserProfileEntity>): number => {
   };
 
   let metabolism = formulas[profile.gender]() * (profile.activity_level / 1000);
-  console.log("🚀 ~ calcMetabolism ~ metabolism:", metabolism);
   if (profile.goal.includes(UserGoalEnum.WEIGHT_LOSS)) {
     metabolism -= 1000;
   }
