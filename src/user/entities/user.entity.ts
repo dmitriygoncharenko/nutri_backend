@@ -18,6 +18,7 @@ import { TelegramFlowEnum } from "src/telegram/enums/telegram-flow.enum";
 import { SubscriptionEntity } from "src/subscription/entities/subscription.entity";
 import { MealEntity } from "src/meal/entities/meal.entity";
 import { MealWeekEntity } from "src/meal/entities/meal-week.entity";
+import { BotMessageEntity } from "src/telegram/entities/bot-message.entity";
 
 @Entity("users")
 export class UserEntity extends AbstractEntity {
@@ -42,9 +43,9 @@ export class UserEntity extends AbstractEntity {
   @Column({ type: "uuid", nullable: true })
   profileId?: string;
 
-  @ApiPropertyOptionalInt()
-  @Column({ type: "int", unique: true, nullable: true })
-  telegramId?: number;
+  @ApiPropertyOptionalString()
+  @Column({ type: "text", unique: true, nullable: true })
+  telegramId?: string;
 
   @ApiPropertyOptionalString()
   @Column({ type: "text", nullable: true })
@@ -94,6 +95,12 @@ export class UserEntity extends AbstractEntity {
     onDelete: "CASCADE",
   })
   subscriptions: SubscriptionEntity[];
+
+  @OneToMany(() => BotMessageEntity, (entity) => entity.user, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  botMessages: BotMessageEntity[];
 
   @OneToMany(() => MealEntity, (entity) => entity.user, {
     cascade: true,

@@ -53,8 +53,10 @@ export class SubscriptionProcessor extends WorkerHost {
         this.openAiService.createThread(userPrompt(subscription.user.profile))
       )
     );
+    console.log("🚀 ~ SubscriptionProcessor ~ process ~ threadIds:", threadIds);
     let currentDate = new Date(subscription.createdAt);
     let daysLeft = subscription.generations;
+    console.log("🚀 ~ SubscriptionProcessor ~ process ~ daysLeft:", daysLeft);
     const mealWeeks: Partial<MealWeekEntity>[] = Array.from(
       Array(Math.ceil(subscription.generations / 7)).keys()
     ).map(() => {
@@ -71,6 +73,10 @@ export class SubscriptionProcessor extends WorkerHost {
       mealWeek.mealDays = threadIds
         .splice(0, daysInThisWeek)
         .map((threadId, key) => {
+          console.log(
+            "🚀 ~ SubscriptionProcessor ~ .map ~ threadId:",
+            threadId
+          );
           const mealDay = new MealDayEntity();
           mealDay.date = new Date(
             currentDate.getTime() + key * 24 * 60 * 60 * 1000
@@ -91,23 +97,20 @@ export class SubscriptionProcessor extends WorkerHost {
 
       return mealWeek;
     });
+    console.log(
+      "🚀 ~ SubscriptionProcessor ~ process ~ mealWeeks:",
+      mealWeeks,
+      mealWeeks[0]?.mealDays
+    );
     const mealWeeksCreated = await this.mealWeekService.createBulk(mealWeeks);
 
     mealWeeksCreated.forEach(async (mwCreated, mwKey) => {
-      console.log(
-        "🚀 ~ SubscriptionProcessor ~ mealWeeksCreated.forEach ~ mwCreated:",
-        mwCreated.mealDays
-      );
       const now = new Date();
       const start = new Date(mwCreated.start);
       const delay = start.getTime() - now.getTime();
 
       await this.mealDayQueue.addBulk(
         mwCreated.mealDays.map((mealDay) => {
-          console.log(
-            "🚀 ~ SubscriptionProcessor ~ mwCreated.mealDays.map ~ mealDay:",
-            mealDay.meals
-          );
           const dayDelay = delay + mwKey * 86400000;
           return {
             name: "",

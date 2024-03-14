@@ -49,7 +49,7 @@ export class MealWeekIngredientsSendProcessor extends WorkerHost {
     mealWeek.mealDays.forEach((mealDay) => {
       mealDay.meals.forEach((meal, key) => {
         const delay =
-          new Date(mealDay.date).getTime() -
+          new Date(new Date(mealDay.date).setHours(0, 0, 0, 0)).getTime() -
           new Date(new Date().setHours(0, 0, 0, 0)).getTime();
         mealJobs.push({
           name: `Send meal: ${meal.type}`,

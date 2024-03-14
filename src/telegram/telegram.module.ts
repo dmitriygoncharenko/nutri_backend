@@ -2,7 +2,6 @@ import { NestjsGrammyModule } from "@grammyjs/nestjs";
 import { Module } from "@nestjs/common";
 import { UserModule } from "src/user/user.module";
 import { TelegramUpdate } from "./services/telegram.update";
-import { TelegramFlowService } from "./flows/telegram-flow.service";
 import { TelegramStartFlowService } from "./flows/telegram-start-flow.service";
 import { TelegramRecipeFlowService } from "./flows/telegram-recipe-flow.service";
 import { SubscriptionModule } from "src/subscription/subscription.module";
@@ -13,6 +12,8 @@ import { telegramConfig } from "src/config/telegram.config";
 import { TelegramService } from "./services/telegram.service";
 import { BullModule } from "@nestjs/bullmq";
 import { SubscriptionQueueEnum } from "src/queue/enums/subscription-queue.enum";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { BotMessageEntity } from "./entities/bot-message.entity";
 
 @Module({
   imports: [
@@ -25,19 +26,18 @@ import { SubscriptionQueueEnum } from "src/queue/enums/subscription-queue.enum";
     BullModule.registerQueue({
       name: SubscriptionQueueEnum.SUBSCRIPTION_PAYMENT_QUEUE,
     }),
+    TypeOrmModule.forFeature([BotMessageEntity]),
   ],
   providers: [
     TelegramUpdate,
     TelegramRecipeFlowService,
     TelegramStartFlowService,
-    TelegramFlowService,
     TelegraphService,
     TelegramService,
   ],
   exports: [
     TelegramUpdate,
     TelegramStartFlowService,
-    TelegramFlowService,
     TelegramRecipeFlowService,
     TelegraphService,
     TelegramService,

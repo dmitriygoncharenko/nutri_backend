@@ -29,6 +29,7 @@ import { calcMetabolism } from "src/user/utilities/profile.utility";
 import { InjectQueue } from "@nestjs/bullmq";
 import { SubscriptionQueueEnum } from "src/queue/enums/subscription-queue.enum";
 import { Queue } from "bullmq";
+import { TelegramFlowEnum } from "../enums/telegram-flow.enum";
 
 @Injectable()
 export class TelegramStartFlowService {
@@ -289,6 +290,10 @@ export class TelegramStartFlowService {
             "New subscription",
             subscription.id
           );
+          await this.userService.update(user.id, {
+            telegramFlow: TelegramFlowEnum.DEFAULT,
+            telegramState: TelegramFlowStateEnum.DEFAULT,
+          });
           return type === SubscriptionTypeEnum.FREE
             ? "🚀🚀🚀 Открыли для тебя пробный период на один день. Уже готовим индивидуальное меню по твоим ответам. Ожидай список покупок и рецепты. Уведомление придёт в этом боте."
             : "🚀🚀🚀 Отлично, направляю тебе ссылку на оплату твоей подписки.";

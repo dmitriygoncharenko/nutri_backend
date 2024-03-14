@@ -6,9 +6,9 @@ export interface TelegramFlowStepInterface {
   key: TelegramFlowStateEnum;
   message: (user: UserEntity) => Promise<string>;
   field: string;
-  action: (user: UserEntity, value: any, ctx?: Context) => void;
+  action: (user: UserEntity, value: Record<string, any>, ctx?: Context) => void;
   skipStep?: (user: UserEntity, ctx?: Context) => Promise<boolean>;
-  buttons?: any[];
+  buttons?: { label: string; value: any }[];
   file?: { url?: string };
   poll?: {
     options: {

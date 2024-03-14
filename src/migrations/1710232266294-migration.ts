@@ -1,9 +1,20 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1709634509060 implements MigrationInterface {
-    name = 'Migration1709634509060'
+export class Migration1710232266294 implements MigrationInterface {
+    name = 'Migration1710232266294'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
+            CREATE TABLE "user_email_codes" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "code" text NOT NULL,
+                "userId" uuid NOT NULL,
+                CONSTRAINT "PK_7a7a09306415c839f7abdf1715b" PRIMARY KEY ("id")
+            )
+        `);
         await queryRunner.query(`
             CREATE TYPE "public"."user_profiles_gender_enum" AS ENUM('MALE', 'FEMALE')
         `);
@@ -97,29 +108,6 @@ export class Migration1709634509060 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
-            CREATE TYPE "public"."MealWeekStatusEnum" AS ENUM(
-                'created',
-                'generated',
-                'complete',
-                'ingredients_sent'
-            )
-        `);
-        await queryRunner.query(`
-            CREATE TABLE "meal_weeks" (
-                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-                "deletedAt" TIMESTAMP WITH TIME ZONE,
-                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "start" TIMESTAMP WITH TIME ZONE NOT NULL,
-                "end" TIMESTAMP WITH TIME ZONE NOT NULL,
-                "status" "public"."MealWeekStatusEnum" NOT NULL DEFAULT 'created',
-                "ingredients" jsonb NOT NULL DEFAULT '[]',
-                "userId" uuid NOT NULL,
-                "subscriptionId" uuid NOT NULL,
-                CONSTRAINT "PK_0996260eadac60f7cb1484a9477" PRIMARY KEY ("id")
-            )
-        `);
-        await queryRunner.query(`
             CREATE TYPE "public"."MealDayStatusEnum" AS ENUM(
                 'created',
                 'generated',
@@ -182,6 +170,48 @@ export class Migration1709634509060 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
+            CREATE TYPE "public"."TelegramFlowStateEnum" AS ENUM(
+                'default',
+                'start_init',
+                'start_gender',
+                'start_weight',
+                'start_dob',
+                'start_calories',
+                'start_height',
+                'start_email',
+                'start_email_code',
+                'start_coach',
+                'start_food_type',
+                'start_food_count',
+                'start_goal',
+                'start_modules',
+                'start_food_habits',
+                'start_activity_level',
+                'start_location',
+                'recipe_init',
+                'recipe_diet',
+                'recipe_ingredients',
+                'recipe_calories',
+                'weight_init',
+                'weight_bmi',
+                'pay_init',
+                'free_init'
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "bot_messages" (
+                "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+                "deletedAt" TIMESTAMP WITH TIME ZONE,
+                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                "messageId" text NOT NULL,
+                "stepKey" "public"."TelegramFlowStateEnum" NOT NULL,
+                "userId" uuid NOT NULL,
+                CONSTRAINT "UQ_5f6b5fc98e00a2dcc4293560438" UNIQUE ("messageId"),
+                CONSTRAINT "PK_333da6c5e0aa0eb4d6e8eec1b61" PRIMARY KEY ("id")
+            )
+        `);
+        await queryRunner.query(`
             CREATE TYPE "public"."users_telegramstate_enum" AS ENUM(
                 'default',
                 'start_init',
@@ -233,7 +263,7 @@ export class Migration1709634509060 implements MigrationInterface {
                 "auth0Id" text,
                 "phone" text,
                 "profileId" uuid,
-                "telegramId" integer,
+                "telegramId" text,
                 "telegramUsername" text,
                 "telegramState" "public"."users_telegramstate_enum" NOT NULL DEFAULT 'default',
                 "telegramFlow" "public"."users_telegramflow_enum",
@@ -271,23 +301,27 @@ export class Migration1709634509060 implements MigrationInterface {
             )
         `);
         await queryRunner.query(`
-            CREATE TABLE "user_email_codes" (
+            CREATE TYPE "public"."MealWeekStatusEnum" AS ENUM(
+                'created',
+                'generated',
+                'complete',
+                'ingredients_sent'
+            )
+        `);
+        await queryRunner.query(`
+            CREATE TABLE "meal_weeks" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "deletedAt" TIMESTAMP WITH TIME ZONE,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-                "code" text NOT NULL,
+                "start" TIMESTAMP WITH TIME ZONE NOT NULL,
+                "end" TIMESTAMP WITH TIME ZONE NOT NULL,
+                "status" "public"."MealWeekStatusEnum" NOT NULL DEFAULT 'created',
+                "ingredients" jsonb NOT NULL DEFAULT '[]',
                 "userId" uuid NOT NULL,
-                CONSTRAINT "PK_7a7a09306415c839f7abdf1715b" PRIMARY KEY ("id")
+                "subscriptionId" uuid NOT NULL,
+                CONSTRAINT "PK_0996260eadac60f7cb1484a9477" PRIMARY KEY ("id")
             )
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "meal_weeks"
-            ADD CONSTRAINT "FK_43c2209a81291e19c6a493933c3" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
-        await queryRunner.query(`
-            ALTER TABLE "meal_weeks"
-            ADD CONSTRAINT "FK_bb36800abeec90891a2aaceeeb7" FOREIGN KEY ("subscriptionId") REFERENCES "subscriptions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
             ALTER TABLE "meal_days"
@@ -302,6 +336,10 @@ export class Migration1709634509060 implements MigrationInterface {
             ADD CONSTRAINT "FK_3111c7cf13da976d7ed18287811" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
         await queryRunner.query(`
+            ALTER TABLE "bot_messages"
+            ADD CONSTRAINT "FK_062770a14979f7aa93d0d54aca0" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
             ALTER TABLE "users"
             ADD CONSTRAINT "FK_b1bda35cdb9a2c1b777f5541d87" FOREIGN KEY ("profileId") REFERENCES "user_profiles"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `);
@@ -309,14 +347,31 @@ export class Migration1709634509060 implements MigrationInterface {
             ALTER TABLE "subscriptions"
             ADD CONSTRAINT "FK_fbdba4e2ac694cf8c9cecf4dc84" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
+        await queryRunner.query(`
+            ALTER TABLE "meal_weeks"
+            ADD CONSTRAINT "FK_43c2209a81291e19c6a493933c3" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "meal_weeks"
+            ADD CONSTRAINT "FK_bb36800abeec90891a2aaceeeb7" FOREIGN KEY ("subscriptionId") REFERENCES "subscriptions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
+            ALTER TABLE "meal_weeks" DROP CONSTRAINT "FK_bb36800abeec90891a2aaceeeb7"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "meal_weeks" DROP CONSTRAINT "FK_43c2209a81291e19c6a493933c3"
+        `);
         await queryRunner.query(`
             ALTER TABLE "subscriptions" DROP CONSTRAINT "FK_fbdba4e2ac694cf8c9cecf4dc84"
         `);
         await queryRunner.query(`
             ALTER TABLE "users" DROP CONSTRAINT "FK_b1bda35cdb9a2c1b777f5541d87"
+        `);
+        await queryRunner.query(`
+            ALTER TABLE "bot_messages" DROP CONSTRAINT "FK_062770a14979f7aa93d0d54aca0"
         `);
         await queryRunner.query(`
             ALTER TABLE "meals" DROP CONSTRAINT "FK_3111c7cf13da976d7ed18287811"
@@ -328,13 +383,10 @@ export class Migration1709634509060 implements MigrationInterface {
             ALTER TABLE "meal_days" DROP CONSTRAINT "FK_49d6b041e341ac8ddae34800fd2"
         `);
         await queryRunner.query(`
-            ALTER TABLE "meal_weeks" DROP CONSTRAINT "FK_bb36800abeec90891a2aaceeeb7"
+            DROP TABLE "meal_weeks"
         `);
         await queryRunner.query(`
-            ALTER TABLE "meal_weeks" DROP CONSTRAINT "FK_43c2209a81291e19c6a493933c3"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "user_email_codes"
+            DROP TYPE "public"."MealWeekStatusEnum"
         `);
         await queryRunner.query(`
             DROP TABLE "subscriptions"
@@ -355,6 +407,12 @@ export class Migration1709634509060 implements MigrationInterface {
             DROP TYPE "public"."users_telegramstate_enum"
         `);
         await queryRunner.query(`
+            DROP TABLE "bot_messages"
+        `);
+        await queryRunner.query(`
+            DROP TYPE "public"."TelegramFlowStateEnum"
+        `);
+        await queryRunner.query(`
             DROP TABLE "meals"
         `);
         await queryRunner.query(`
@@ -368,12 +426,6 @@ export class Migration1709634509060 implements MigrationInterface {
         `);
         await queryRunner.query(`
             DROP TYPE "public"."MealDayStatusEnum"
-        `);
-        await queryRunner.query(`
-            DROP TABLE "meal_weeks"
-        `);
-        await queryRunner.query(`
-            DROP TYPE "public"."MealWeekStatusEnum"
         `);
         await queryRunner.query(`
             DROP TABLE "user_profiles"
@@ -401,6 +453,9 @@ export class Migration1709634509060 implements MigrationInterface {
         `);
         await queryRunner.query(`
             DROP TYPE "public"."user_profiles_gender_enum"
+        `);
+        await queryRunner.query(`
+            DROP TABLE "user_email_codes"
         `);
     }
 

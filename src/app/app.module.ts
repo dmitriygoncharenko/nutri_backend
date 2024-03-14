@@ -19,6 +19,7 @@ import { RestModule } from "src/rest/rest.module";
 import { S3Module } from "src/s3/s3.module";
 import { BullModule } from "@nestjs/bullmq";
 import { QueueModule } from "src/queue/queue.module";
+import { redisConfig } from "src/config/redis.config";
 
 @Module({
   imports: [
@@ -50,8 +51,7 @@ import { QueueModule } from "src/queue/queue.module";
     }),
     BullModule.forRoot({
       connection: {
-        host: "localhost",
-        port: 6379,
+        ...redisConfig(),
       },
     }),
     AuthModule,

@@ -57,7 +57,7 @@ export class MealRunProcessor extends WorkerHost {
 
       // GENERATE IMAGE
       const imageBase64 = await this.openAiService.createImage(
-        `Create an Image of meal based on recipe description: ${response}`
+        `Create a realistic photo of meal based on recipe description: ${response}`
       );
       await this.s3Service.uploadFile(`${meal.id}.png`, imageBase64);
       return;

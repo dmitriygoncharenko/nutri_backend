@@ -53,7 +53,7 @@ export class MealDayProcessor extends WorkerHost {
       });
 
       await this.mealDayIngredientsQueue.add(
-        "Genrate day ingredients",
+        "Generate day ingredients",
         mealDay.id
       );
       return;
@@ -64,8 +64,9 @@ export class MealDayProcessor extends WorkerHost {
       const nextMealToGenerate = mealDay.meals.find(
         (el) => el.status === MealStatusEnum.CREATED
       );
-      if (!nextMealToGenerate)
-        throw new Error("Can't find next meal to generate");
+      if (!nextMealToGenerate) {
+        return;
+      }
 
       await this.openAiService.addThreadMessage(mealDay.threadId, {
         role: "user",
