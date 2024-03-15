@@ -6,9 +6,8 @@ import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
 import {
   MessageCreateParams,
-  ThreadMessagesPage,
+  MessagesPage,
 } from "openai/resources/beta/threads/messages/messages";
-import { Run } from "openai/resources/beta/threads/runs/runs";
 import { openaiConfig } from "src/config/openai.config";
 import { RestService } from "src/rest/services/rest.service";
 import { AssitantRun } from "../types/openai-type";
@@ -56,7 +55,7 @@ export class OpenAIService {
     await this.openAi.beta.threads.messages.create(threadId, message);
   }
 
-  async getThreadMessages(threadId: string): Promise<ThreadMessagesPage> {
+  async getThreadMessages(threadId: string): Promise<MessagesPage> {
     console.log("get messages from thread");
     return await this.openAi.beta.threads.messages.list(threadId);
   }
