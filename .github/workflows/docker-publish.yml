@@ -32,7 +32,10 @@ jobs:
     needs: build-and-push
     steps:
     - name: Decode SSH key
-      run: echo "${{ secrets.SERVER_SSH_KEY }}" | base64 -d > $HOME/server_key.pem && chmod 600 $HOME/server_key.pem
+      run: |
+        echo "${{ secrets.SERVER_SSH_KEY }}" | base64 -d > $HOME/server_key.pem
+        sed -i -e 's/\r//g' $HOME/server_key.pem
+        chmod 600 $HOME/server_key.pem
 
     - name: Deploy to Server
       uses: appleboy/ssh-action@master

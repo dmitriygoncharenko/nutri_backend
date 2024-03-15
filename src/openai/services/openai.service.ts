@@ -6,11 +6,12 @@ import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
 import {
   MessageCreateParams,
-  MessagesPage,
+  ThreadMessage,
 } from "openai/resources/beta/threads/messages/messages";
 import { openaiConfig } from "src/config/openai.config";
 import { RestService } from "src/rest/services/rest.service";
 import { AssitantRun } from "../types/openai-type";
+import { CursorPage } from "openai/pagination";
 
 @Injectable()
 export class OpenAIService {
@@ -55,7 +56,9 @@ export class OpenAIService {
     await this.openAi.beta.threads.messages.create(threadId, message);
   }
 
-  async getThreadMessages(threadId: string): Promise<MessagesPage> {
+  async getThreadMessages(
+    threadId: string
+  ): Promise<CursorPage<ThreadMessage>> {
     console.log("get messages from thread");
     return await this.openAi.beta.threads.messages.list(threadId);
   }
