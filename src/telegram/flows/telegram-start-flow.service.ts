@@ -230,6 +230,7 @@ export class TelegramStartFlowService {
         action: async (user: UserEntity, value: { email: string }) => {
           const { email } = value;
           const validEmail = validateEmail(email);
+          await this.userService.update(user.id, { email: validEmail });
           const code = String(randomNumber(6));
           await this.userEmailCodeService.create({ userId: user.id, code });
           await this.sendGridService.send({
