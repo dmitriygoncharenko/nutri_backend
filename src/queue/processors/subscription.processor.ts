@@ -47,20 +47,16 @@ export class SubscriptionProcessor extends WorkerHost {
       where: { id: subscriptionId },
       relations: ["user", "user.profile"],
     });
-    console.log(
-      "🚀 ~ SubscriptionProcessor ~ process ~ subscription:",
-      subscription
-    );
 
     const threadIds = await Promise.all(
       Array.from(Array(subscription.generations).keys()).map(() =>
         this.openAiService.createThread(userPrompt(subscription.user.profile))
       )
     );
-    console.log("🚀 ~ SubscriptionProcessor ~ process ~ threadIds:", threadIds);
+
     let currentDate = new Date(subscription.createdAt);
     let daysLeft = subscription.generations;
-    console.log("🚀 ~ SubscriptionProcessor ~ process ~ daysLeft:", daysLeft);
+
     const mealWeeks: Partial<MealWeekEntity>[] = Array.from(
       Array(Math.ceil(subscription.generations / 7)).keys()
     ).map(() => {
