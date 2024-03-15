@@ -42,6 +42,7 @@ export class YookassaService {
     subscriptionId: string,
     user: UserEntity
   ): Promise<Payment> {
+    console.log("🚀 ~ YookassaService ~ user:", user);
     try {
       const { shopId, secretKey } = yookassaConfig();
       const Authorization = createBasicAuthToken(shopId, secretKey);
