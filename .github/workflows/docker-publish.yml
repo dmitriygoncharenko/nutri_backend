@@ -41,5 +41,27 @@ jobs:
           docker pull nutrinetic/nutri_backend:latest
           docker stop nutri_backend || true
           docker rm nutri_backend || true
-          docker run -d --name nutri_backend -p 3000:3000 -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_HOST=${{ secrets.DB_HOST }} -e DB_DATABASE=${{ secrets.DB_DATABASE }} -e AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }} -e AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }} -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} -e PORT=${{ secrets.PORT }} -e REDIS_HOST=${{ secrets.REDIS_HOST }} -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} -e REDIS_PORT=${{ secrets.REDIS_PORT }} -e REDIS_USERNAME=${{ secrets.REDIS_USERNAME }} -e S3_ACCESS_KEY_ID=${{ secrets.S3_ACCESS_KEY_ID }} -e S3_ENDPOINT=${{ secrets.S3_ENDPOINT }} -e S3_SECRET_ACCESS_KEY=${{ secrets.S3_SECRET_ACCESS_KEY }} -e SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }} -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} -e TELEGRAPH_ACCESS_TOKEN=${{ secrets.TELEGRAPH_ACCESS_TOKEN }} -e YOOKASSA_SECRET=${{ secrets.YOOKASSA_SECRET }} -e YOOKASSA_SHOPID=${{ secrets.YOOKASSA_SHOPID }} -e YOOKASSA_TOKEN=${{ secrets.YOOKASSA_TOKEN }}
+          docker run -d --name nutri_backend -p 3000:3000 \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e DB_PORT=${{ secrets.DB_PORT }} \
+            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+            -e DB_HOST=${{ secrets.DB_HOST }} \
+            -e DB_DATABASE=${{ secrets.DB_DATABASE }} \
+            -e AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }} \
+            -e AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }} \
+            -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            -e PORT=${{ secrets.PORT }} \
+            -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
+            -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+            -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
+            -e REDIS_USERNAME=${{ secrets.REDIS_USERNAME }} \
+            -e S3_ACCESS_KEY_ID=${{ secrets.S3_ACCESS_KEY_ID }} \
+            -e S3_ENDPOINT=${{ secrets.S3_ENDPOINT }} \
+            -e S3_SECRET_ACCESS_KEY=${{ secrets.S3_SECRET_ACCESS_KEY }} \
+            -e SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }} \
+            -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
+            -e TELEGRAPH_ACCESS_TOKEN=${{ secrets.TELEGRAPH_ACCESS_TOKEN }} \
+            -e YOOKASSA_SECRET=${{ secrets.YOOKASSA_SECRET }} \
+            -e YOOKASSA_SHOPID=${{ secrets.YOOKASSA_SHOPID }} \
+            -e YOOKASSA_TOKEN=${{ secrets.YOOKASSA_TOKEN }} \
             nutrinetic/nutri_backend:latest
