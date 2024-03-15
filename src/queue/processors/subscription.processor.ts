@@ -47,6 +47,10 @@ export class SubscriptionProcessor extends WorkerHost {
       where: { id: subscriptionId },
       relations: ["user", "user.profile"],
     });
+    console.log(
+      "🚀 ~ SubscriptionProcessor ~ process ~ subscription:",
+      subscription
+    );
 
     const threadIds = await Promise.all(
       Array.from(Array(subscription.generations).keys()).map(() =>
