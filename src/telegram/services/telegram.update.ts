@@ -19,8 +19,8 @@ export class TelegramUpdate {
 
   @Start()
   async start(@Ctx() ctx: Context) {
-    const { user } = await this.telegramService.getUser(ctx);
-    await this.userService.update(user.id, {
+    let { user } = await this.telegramService.getUser(ctx);
+    user = await this.userService.update(user.id, {
       telegramFlow: TelegramFlowEnum.START,
       telegramState: TelegramFlowStateEnum.START_INIT,
     });
