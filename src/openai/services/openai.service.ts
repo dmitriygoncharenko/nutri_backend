@@ -4,10 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { Interval } from "@nestjs/schedule";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
-import {
-  MessageCreateParams,
-  ThreadMessage,
-} from "openai/resources/beta/threads/messages/messages";
+import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 import { openaiConfig } from "src/config/openai.config";
 import { RestService } from "src/rest/services/rest.service";
 import { AssitantRun } from "../types/openai-type";
@@ -56,9 +53,7 @@ export class OpenAIService {
     await this.openAi.beta.threads.messages.create(threadId, message);
   }
 
-  async getThreadMessages(
-    threadId: string
-  ): Promise<CursorPage<ThreadMessage>> {
+  async getThreadMessages(threadId: string) {
     console.log("get messages from thread");
     return await this.openAi.beta.threads.messages.list(threadId);
   }
