@@ -1,4 +1,4 @@
-import { Bot, Context } from "grammy";
+import { Bot, Context, Keyboard } from "grammy";
 import { InjectBot, Update, Start, Ctx, On, Help } from "@grammyjs/nestjs";
 import { UserService } from "src/user/services/user.service";
 import { TelegramFlowStateEnum } from "../enums/telegram-flow-state.enum";
@@ -34,6 +34,27 @@ export class TelegramUpdate {
     ctx.reply(
       `Привет, ${telegramUser.first_name}. Меня зовут Дмитрий 👨‍💻, я создал данного бота. Если у тебя есть вопросы, тогда пиши мне, я буду рад тебе помочь. Мой телеграм: @gonchardev`
     );
+  }
+
+  @On("/menu")
+  async onMenu(ctx: Context) {
+    const keyboard = new Keyboard()
+      .text("/start")
+      .row() // Each `.row()` call moves to the next row
+      .text("/newSubscription")
+      .row()
+      .text("/help"); // You can chain `.text()` for same-row buttons
+
+    // Sending a message with the reply keyboard
+    await ctx.reply("Menu:", {
+      reply_markup: {
+        keyboard: keyboard.build(),
+        // This will resize the keyboard to be smaller if there are not many buttons
+        resize_keyboard: true,
+        // This will hide the keyboard after one use (optional)
+        one_time_keyboard: true,
+      },
+    });
   }
 
   @On("callback_query")
