@@ -1,5 +1,5 @@
 import { Bot, Context } from "grammy";
-import { InjectBot, Update, Start, Ctx, On } from "@grammyjs/nestjs";
+import { InjectBot, Update, Start, Ctx, On, Help } from "@grammyjs/nestjs";
 import { UserService } from "src/user/services/user.service";
 import { TelegramFlowStateEnum } from "../enums/telegram-flow-state.enum";
 import { TelegramFlowCommandEnum } from "../enums/telegram-flow-command.enum";
@@ -26,6 +26,14 @@ export class TelegramUpdate {
     });
     const steps = this.telegramService.getFlowSteps(TelegramFlowEnum.START);
     await this.telegramService.sendStepMessage(user, steps[0], ctx);
+  }
+
+  @Help()
+  async onHelp(ctx: Context) {
+    let { telegramUser } = await this.telegramService.getUser(ctx);
+    ctx.reply(
+      `Привет, ${telegramUser.first_name}. Меня зовут Дмитрий 👨‍💻, я создал данного бота. Если у тебя есть вопросы, тогда пиши мне, я буду рад тебе помочь. Мой телеграм: @gonchardev`
+    );
   }
 
   @On("callback_query")
