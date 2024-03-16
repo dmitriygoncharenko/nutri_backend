@@ -83,9 +83,9 @@ export class OpenAIService {
         prompt,
         n: 1,
         size: "1024x1024",
-        style: "vivid",
+        style: "natural",
         response_format: "b64_json",
-        // quality: "standart",
+        quality: "hd",
       },
       {
         headers: {
