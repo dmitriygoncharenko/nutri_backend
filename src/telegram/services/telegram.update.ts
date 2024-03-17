@@ -61,9 +61,18 @@ export class TelegramUpdate {
 
   @On("/recipe")
   async onRecipe(ctx: Context) {
-    ctx.reply(
+    let { telegramUser } = await this.telegramService.getUser(ctx);
+    this.bot.api.sendMessage(
+      telegramUser.id,
       "😁 Привет! Данная функция ещё в разработке 👨‍💻. Сообщу тебе как будет готова 🫡."
     );
+    // let { user } = await this.telegramService.getUser(ctx);
+    // user = await this.userService.update(user.id, {
+    //   telegramFlow: TelegramFlowEnum.RECIPE,
+    //   telegramState: TelegramFlowStateEnum.RECIPE_INIT,
+    // });
+    // const steps = this.telegramService.getFlowSteps(TelegramFlowEnum.RECIPE);
+    // await this.telegramService.sendStepMessage(user, steps[0], ctx);
   }
 
   @On("message")
