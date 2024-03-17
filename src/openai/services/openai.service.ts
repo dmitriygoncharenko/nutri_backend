@@ -79,13 +79,13 @@ export class OpenAIService {
     const response = await this.restService.post(
       "https://api.openai.com/v1/images/generations",
       {
-        // model: "dall-e-2",
+        model: "dall-e-3",
         prompt,
-        // n: 1,
-        size: "512x512",
-        // style: "natural",
+        n: 1,
+        size: "1024x1024",
+        style: "vivid",
         response_format: "b64_json",
-        // quality: "hd",
+        quality: "hd",
       },
       {
         headers: {
