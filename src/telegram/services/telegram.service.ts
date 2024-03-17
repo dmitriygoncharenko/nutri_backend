@@ -11,6 +11,7 @@ import { TelegramStartFlowService } from "../flows/telegram-start-flow.service";
 import { UserEntity } from "src/user/entities/user.entity";
 import { createReadStream } from "fs";
 import { TelegramFlowStateEnum } from "../enums/telegram-flow-state.enum";
+import { TelegramRecipeFlowService } from "../flows/telegram-recipe-flow.service";
 
 @Injectable()
 export class TelegramService {
@@ -20,7 +21,8 @@ export class TelegramService {
     @InjectRepository(BotMessageEntity)
     private readonly botMessageRepository: Repository<BotMessageEntity>,
     private readonly userService: UserService,
-    private readonly telegramStartFlowService: TelegramStartFlowService
+    private readonly telegramStartFlowService: TelegramStartFlowService,
+    private readonly telegramRecipeFlowService: TelegramRecipeFlowService
   ) {}
 
   async getUser(ctx: Context) {
@@ -91,6 +93,7 @@ export class TelegramService {
     console.log("🚀 ~ TelegramService ~ getFlowSteps ~ flow:", flow);
     const flows = {
       [TelegramFlowEnum.START]: this.telegramStartFlowService.getSteps(),
+      [TelegramFlowEnum.RECIPE]: this.telegramRecipeFlowService.getSteps(),
     };
     const steps = flows[flow];
     if (!steps) throw new Error("Шаги для флоу не найдены");

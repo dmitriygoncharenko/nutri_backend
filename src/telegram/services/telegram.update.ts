@@ -59,27 +59,11 @@ export class TelegramUpdate {
     );
   }
 
-  @On("/recipe")
-  async onRecipe(ctx: Context) {
-    let { telegramUser } = await this.telegramService.getUser(ctx);
-    this.bot.api.sendMessage(
-      telegramUser.id,
-      "😁 Привет! Данная функция ещё в разработке 👨‍💻. Сообщу тебе как будет готова 🫡."
-    );
-    // let { user } = await this.telegramService.getUser(ctx);
-    // user = await this.userService.update(user.id, {
-    //   telegramFlow: TelegramFlowEnum.RECIPE,
-    //   telegramState: TelegramFlowStateEnum.RECIPE_INIT,
-    // });
-    // const steps = this.telegramService.getFlowSteps(TelegramFlowEnum.RECIPE);
-    // await this.telegramService.sendStepMessage(user, steps[0], ctx);
-  }
-
   @On("message")
   async onMessage(ctx: Context) {
     const commands = Object.keys(TelegramFlowCommandEnum);
+    let { user } = await this.telegramService.getUser(ctx);
     if (!commands.includes(ctx.update.message.text)) {
-      const { user } = await this.telegramService.getUser(ctx);
       const messageExists = await this.telegramService.editAnswer(
         user,
         ctx,
@@ -95,6 +79,15 @@ export class TelegramUpdate {
         ctx?.update?.message?.reply_to_message?.message_id,
         ctx.update.message.text
       );
+    } else {
+      const steps = this.telegramService.getFlowSteps(
+        TelegramFlowCommandEnum?.[ctx.update.message.text]
+      );
+      user = await this.userService.update(user.id, {
+        telegramFlow: TelegramFlowCommandEnum?.[ctx.update.message.text],
+        telegramState: TelegramFlowStateEnum.START_INIT,
+      });
+      await this.telegramService.sendStepMessage(user, steps[0], ctx);
     }
   }
 

@@ -10,9 +10,18 @@ export class TelegramRecipeFlowService {
   getSteps(): TelegramFlowStepInterface[] {
     return [
       {
+        key: TelegramFlowStateEnum.START_INIT,
+        message: async () =>
+          "😁 Привет! Данная функция ещё в разработке 👨‍💻. Сообщу тебе как будет готова 🫡.",
+        field: null,
+        action: (user: UserEntity, value: { dish_type: string }) => false,
+      },
+    ];
+    return [
+      {
         key: TelegramFlowStateEnum.RECIPE_INIT,
         message: async () =>
-          "Nutrinetic поможет создать рецепт вкусного и полезного блюда. Выберите какой тип блюда мы будем готовить?",
+          "Nutrinetic может создать рецепт вкусного и полезного блюда на основе ваших предпочтений. Выберите какой тип блюда мы будем готовить?",
         field: "dish_type",
         action: (user: UserEntity, value: { dish_type: string }) => {},
         poll: {
