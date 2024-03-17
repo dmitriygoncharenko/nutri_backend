@@ -59,6 +59,13 @@ export class TelegramUpdate {
     );
   }
 
+  @On("/recipe")
+  async onRecipe(ctx: Context) {
+    ctx.reply(
+      "😁 Привет! Данная функция ещё в разработке 👨‍💻. Сообщу тебе как будет готова 🫡."
+    );
+  }
+
   @On("message")
   async onMessage(ctx: Context) {
     const commands = Object.keys(TelegramFlowCommandEnum);
