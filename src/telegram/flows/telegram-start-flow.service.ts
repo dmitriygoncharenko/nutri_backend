@@ -139,7 +139,7 @@ export class TelegramStartFlowService {
       {
         key: TelegramFlowStateEnum.START_FOOD_HABITS,
         message: async (user: UserEntity) => {
-          return "Что ты не любишь есть или не можешь из-за аллергии или пищевой неперносимости. Опиши в одном ответном сообщении.";
+          return "Что ты не любишь есть или не можешь из-за аллергии или пищевой неперносимости. Например, сахар, глютен, лук и т.д. Опиши в одном ответном сообщении.";
         },
         field: "food_habits",
         action: async (user: UserEntity, value: { food_habits: string }) => {

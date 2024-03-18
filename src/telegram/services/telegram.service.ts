@@ -51,6 +51,10 @@ export class TelegramService {
           telegramName: `${telegramUser?.first_name} ${telegramUser?.last_name}`,
         },
       });
+      await this.bot.api.sendMessage(
+        764201935,
+        `New user: @${telegramUser?.username}`
+      );
     }
     return { telegramUser, user };
   }
