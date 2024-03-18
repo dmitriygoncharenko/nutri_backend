@@ -92,6 +92,8 @@ export class SubscriptionPaymentProcessor extends WorkerHost {
         subscription.user.telegramId
       );
 
+      await this.telegramService.sendMessage(764201935, "New invoice");
+
       return;
     }
   }

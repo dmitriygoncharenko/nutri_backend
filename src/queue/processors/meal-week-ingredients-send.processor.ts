@@ -37,7 +37,7 @@ export class MealWeekIngredientsSendProcessor extends WorkerHost {
     `;
 
     await this.telegramService.sendMessage(
-      mealWeek.user.telegramId,
+      Number(mealWeek.user.telegramId),
       ingredientsMessage
     );
     const mealJobs: {

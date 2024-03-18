@@ -104,7 +104,7 @@ export class TelegramService {
     return steps;
   }
 
-  async sendMessage(id: string, text: string) {
+  async sendMessage(id: number, text: string) {
     return await this.bot.api.sendMessage(id, text);
   }
 
