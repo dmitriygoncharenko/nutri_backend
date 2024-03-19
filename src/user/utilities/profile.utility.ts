@@ -17,7 +17,7 @@ export const calcMetabolism = (profile: Partial<UserProfileEntity>): number => {
 
   let metabolism = formulas[profile.gender]() * (profile.activity_level / 1000);
   if (profile.goal.includes(UserGoalEnum.WEIGHT_LOSS)) {
-    metabolism -= 1000;
+    metabolism -= 300;
   }
   return Math.round(metabolism);
 };
