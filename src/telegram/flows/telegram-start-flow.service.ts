@@ -115,7 +115,8 @@ export class TelegramStartFlowService {
       },
       {
         key: TelegramFlowStateEnum.START_FOOD_COUNT,
-        message: async () => "Сколько раз в день ты хочешь питаться?",
+        message: async () =>
+          "Сколько раз в день ты хочешь питаться (можно несколько ответов)?",
         field: "mealTypes",
         action: async (
           user: UserEntity,
@@ -199,7 +200,7 @@ export class TelegramStartFlowService {
       {
         key: TelegramFlowStateEnum.START_GOAL,
         message: async (user: UserEntity) => {
-          return "Какие у тебя цели в работе с Nutrinetic?";
+          return "Какие у тебя цели в работе с Nutrinetic (можно несколько ответов)?";
         },
         field: "goal",
         action: async (user: UserEntity, value: { goal: string[] }) => {

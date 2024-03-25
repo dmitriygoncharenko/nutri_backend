@@ -69,7 +69,7 @@ export class SubscriptionPaymentProcessor extends WorkerHost {
       const caption = `Подписка NUTRINETIC на 1 неделю`;
 
       const payment = await this.yookassaService.createPayment(
-        "590.00",
+        "990.00",
         caption,
         subscription.id,
         subscription.user
