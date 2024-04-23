@@ -1,3 +1,4 @@
+//@ts-ignore
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 import { UserProfileEntity } from "src/user/entities/user-profile.entity";
 
