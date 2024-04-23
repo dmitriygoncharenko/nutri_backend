@@ -48,6 +48,8 @@ export class MealSendProcessor extends WorkerHost {
     });
     if (!pageResult.ok) throw new Error("Page not created");
 
+
+
     await this.telegramService.sendMessageWithImage(
       title,
       getImageUrl(`${meal.id}.png`),

@@ -20,6 +20,7 @@ import { S3Module } from "src/s3/s3.module";
 import { BullModule } from "@nestjs/bullmq";
 import { QueueModule } from "src/queue/queue.module";
 import { redisConfig } from "src/config/redis.config";
+import {NotionModule} from "../notion/notion.module";
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { redisConfig } from "src/config/redis.config";
     MealModule,
     RestModule,
     S3Module,
+    NotionModule,
   ],
   controllers: [],
   providers: [AppService],

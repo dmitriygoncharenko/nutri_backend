@@ -64,4 +64,5 @@ jobs:
             -e YOOKASSA_SECRET="${{ secrets.YOOKASSA_SECRET }}" \
             -e YOOKASSA_SHOPID="${{ secrets.YOOKASSA_SHOPID }}" \
             -e YOOKASSA_TOKEN="${{ secrets.YOOKASSA_TOKEN }}" \
+            -e NOTION_TOKEN="${{ secrets.NOTION_TOKEN }}" \
             nutrinetic/nutri_backend:latest

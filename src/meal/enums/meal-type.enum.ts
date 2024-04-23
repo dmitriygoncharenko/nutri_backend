@@ -13,3 +13,11 @@ export const getMealTypeLabels = (): Record<MealTypeEnum, string> => ({
   [MealTypeEnum.SNACK_2]: "🍎 Перекус между обедом и ужином",
   [MealTypeEnum.DINNER]: "🍲 Ужин",
 });
+
+export const getMealTypeEmoji = (): Record<MealTypeEnum, string> => ({
+  [MealTypeEnum.BREAKFAST]: "☕️",
+  [MealTypeEnum.SNACK_1]: "🍏",
+  [MealTypeEnum.LUNCH]: "🍖",
+  [MealTypeEnum.SNACK_2]: "🍎",
+  [MealTypeEnum.DINNER]: "🍲",
+});

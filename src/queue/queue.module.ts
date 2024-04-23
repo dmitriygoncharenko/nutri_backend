@@ -16,6 +16,7 @@ import { SubscriptionQueueEnum } from "./enums/subscription-queue.enum";
 import { SubscriptionPaymentProcessor } from "./processors/subscription-payment.processor";
 import { SubscriptionProcessor } from "./processors/subscription.processor";
 import { SubscriptionModule } from "src/subscription/subscription.module";
+import {NotionModule} from "../notion/notion.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { SubscriptionModule } from "src/subscription/subscription.module";
     SubscriptionModule,
     S3Module,
     MealModule,
+    NotionModule
   ],
   providers: [
     MealDayProcessor,
