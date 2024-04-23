@@ -1,10 +1,8 @@
-//@ts-ignore
-import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 import { UserProfileEntity } from "src/user/entities/user-profile.entity";
 
 export const userPrompt = (
   profile: Partial<UserProfileEntity>
-): MessageCreateParams[] => {
+): any[] => {
   return [
     { role: "user", content: `gender: ${profile.gender}` },
     { role: "user", content: `daily calories: ${profile.metabolism}` },
