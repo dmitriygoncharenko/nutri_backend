@@ -69,7 +69,7 @@ export class MealRunProcessor extends WorkerHost {
           getMealTypeLabels()[meal.type],
           getImageUrl(`${meal.id}.png`),
           getMealTypeEmoji()[meal.type],
-          meal.response,
+          response,
           meal.mealDay.date
       )
       return;
