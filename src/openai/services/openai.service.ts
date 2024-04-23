@@ -33,7 +33,6 @@ export class OpenAIService {
         response_format: { type: "json_object" },
       });
       const response = completion.choices[0].message.content;
-      console.log("🚀 ~ OpenAIService ~ response:", response);
       return JSON.parse(response);
     } catch (err) {
       this.logger.error(err);
@@ -60,7 +59,7 @@ export class OpenAIService {
     return await this.openAi.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
       model: "gpt-4-turbo-preview",
-      tools: [{ type: "retrieval" }],
+      tools: [{ type: "file_search" }],
     });
   }
 
