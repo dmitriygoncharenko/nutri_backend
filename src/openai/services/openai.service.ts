@@ -1,10 +1,7 @@
 // src/openai/openai.service.ts
 import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { Interval } from "@nestjs/schedule";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
-import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 import { openaiConfig } from "src/config/openai.config";
 import { RestService } from "src/rest/services/rest.service";
 import { AssitantRun } from "../types/openai-type";
@@ -43,12 +40,12 @@ export class OpenAIService {
     }
   }
 
-  async createThread(messages: MessageCreateParams[]): Promise<string> {
+  async createThread(messages: any[]): Promise<string> {
     const thread = await this.openAi.beta.threads.create({ messages });
     return thread.id;
   }
 
-  async addThreadMessage(threadId: string, message: MessageCreateParams) {
+  async addThreadMessage(threadId: string, message: any) {
     console.log("add message to thread");
     await this.openAi.beta.threads.messages.create(threadId, message);
   }
