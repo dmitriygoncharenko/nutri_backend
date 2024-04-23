@@ -7,15 +7,15 @@ export enum MealTypeEnum {
 }
 
 export const getMealTypeLabels = (): Record<MealTypeEnum, string> => ({
-  [MealTypeEnum.BREAKFAST]: "☕️ Завтрак",
-  [MealTypeEnum.SNACK_1]: "🍏 Перекус между завтраком и обедом",
-  [MealTypeEnum.LUNCH]: "🍖 Обед",
-  [MealTypeEnum.SNACK_2]: "🍎 Перекус между обедом и ужином",
-  [MealTypeEnum.DINNER]: "🍲 Ужин",
+  [MealTypeEnum.BREAKFAST]: "Завтрак",
+  [MealTypeEnum.SNACK_1]: "Перекус между завтраком и обедом",
+  [MealTypeEnum.LUNCH]: "Обед",
+  [MealTypeEnum.SNACK_2]: "Перекус между обедом и ужином",
+  [MealTypeEnum.DINNER]: "Ужин",
 });
 
 export const getMealTypeEmoji = (): Record<MealTypeEnum, string> => ({
-  [MealTypeEnum.BREAKFAST]: "☕️",
+  [MealTypeEnum.BREAKFAST]: "☕",
   [MealTypeEnum.SNACK_1]: "🍏",
   [MealTypeEnum.LUNCH]: "🍖",
   [MealTypeEnum.SNACK_2]: "🍎",

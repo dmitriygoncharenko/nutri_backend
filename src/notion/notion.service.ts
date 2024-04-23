@@ -17,6 +17,8 @@ export class NotionService {
 
     async createPage(databaseId: string, title: string, coverImage: string, emoji: any, content: string, date: Date) {
         try {
+            console.log(content, markdownToBlocks(content))
+
             const response:CreatePageResponse = await this.notionClient.pages.create({
                 parent: { database_id: databaseId },
                 cover: { external:{ url: coverImage } },

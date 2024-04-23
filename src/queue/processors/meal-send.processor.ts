@@ -12,7 +12,7 @@ import { IngredientInterface } from "../../meal/entities/meal-week.entity";
 import { MealWeekStatusEnum } from "../../meal/enums/meal-week-status.enum";
 import { S3Service } from "src/s3/s3.service";
 import { markdownToNodes } from "src/telegram/utilities/telegraph.utility";
-import { getMealTypeLabels } from "../../meal/enums/meal-type.enum";
+import {getMealTypeEmoji, getMealTypeLabels} from "../../meal/enums/meal-type.enum";
 import { formatDateToShortDate } from "src/shared/utilities/date.utility";
 import { TelegraphService } from "src/telegram/services/telegraph.service";
 import { TelegramService } from "src/telegram/services/telegram.service";
@@ -39,7 +39,7 @@ export class MealSendProcessor extends WorkerHost {
     });
 
     const content = markdownToNodes(meal.response);
-    const title = `${getMealTypeLabels()[meal.type]} ${formatDateToShortDate(
+    const title = `${getMealTypeEmoji()[meal.type]} ${getMealTypeLabels()[meal.type]} ${formatDateToShortDate(
       new Date()
     )}`;
     const pageResult = await this.telegraphService.createPage({
