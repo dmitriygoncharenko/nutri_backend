@@ -64,14 +64,15 @@ export class MealRunProcessor extends WorkerHost {
       );
       await this.s3Service.uploadFile(`${meal.id}.png`, imageBase64);
 
-      await this.notionService.createPage(
-          '2e829300cf1744f9b6faf2577db136b6',
-          getMealTypeLabels()[meal.type],
-          getImageUrl(`${meal.id}.png`),
-          getMealTypeEmoji()[meal.type],
-          response,
-          meal.mealDay.date
-      )
+      if(meal.userId === "82c4d0a2-e940-4453-950c-f556af0fad14")
+        await this.notionService.createPage(
+            '2e829300cf1744f9b6faf2577db136b6',
+            getMealTypeLabels()[meal.type],
+            getImageUrl(`${meal.id}.png`),
+            getMealTypeEmoji()[meal.type],
+            response,
+            meal.mealDay.date
+        )
       return;
     }
 
