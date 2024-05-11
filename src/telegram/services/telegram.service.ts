@@ -129,12 +129,16 @@ export class TelegramService {
         ]),
       });
     } else if (step?.poll) {
-      //@ts-ignore
-      await ctx.api.sendPoll(user.telegramId, message, step.poll.values, {
-        ...step.poll.options,
-        is_anonymous: false,
-        protect_content: true,
-      });
+      await ctx.api.sendPoll(
+        user.telegramId,
+        message,
+        step.poll.values.map((text) => ({ text })),
+        {
+          ...step.poll.options,
+          is_anonymous: false,
+          protect_content: true,
+        }
+      );
 
       // step.key
     } else if (step.file) {
