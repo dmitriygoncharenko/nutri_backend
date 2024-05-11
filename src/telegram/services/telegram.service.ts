@@ -98,7 +98,6 @@ export class TelegramService {
   }
 
   getFlowSteps(flow: TelegramFlowEnum): TelegramFlowStepInterface[] {
-    console.log("🚀 ~ TelegramService ~ getFlowSteps ~ flow:", flow);
     const flows = {
       [TelegramFlowEnum.START]: this.telegramStartFlowService.getSteps(),
       [TelegramFlowEnum.RECIPE]: this.telegramRecipeFlowService.getSteps(),
@@ -130,6 +129,7 @@ export class TelegramService {
         ]),
       });
     } else if (step?.poll) {
+      //@ts-ignore
       await ctx.api.sendPoll(user.telegramId, message, step.poll.values, {
         ...step.poll.options,
         is_anonymous: false,
