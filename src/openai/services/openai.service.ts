@@ -76,7 +76,7 @@ export class OpenAIService {
       "https://api.openai.com/v1/images/generations",
       {
         model: "dall-e-2",
-        prompt: prompt.length > 1000 ? prompt.slice(0, 1000) : prompt,
+        prompt: prompt.length > 1000 ? prompt.slice(0, 999) : prompt,
         n: 1,
         size: "512x512",
         response_format: "b64_json",
